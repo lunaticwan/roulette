@@ -11,7 +11,8 @@ import { Roulette } from './roulette';
 // import.meta.url은 못 쓴다. Parcel이 번들 URL이 아니라 소스 경로 리터럴로 치환한다.
 // dev 서버는 파일명에 해시가 없어 'dev'로 떨어진다.
 const bundleSrc = document.querySelector<HTMLScriptElement>('script[type="module"]')?.src ?? '';
-const version = bundleSrc.match(/\.([0-9a-f]{6,})\.js/)?.[1] ?? 'dev';
+const version =
+  bundleSrc.match(/index-([0-9a-zA-Z_-]+)\.js/)?.[1] ?? bundleSrc.match(/\.([0-9a-f]{6,})\.js/)?.[1] ?? 'dev';
 
 // umami는 defer로 로드되므로 load 시점이면 이미 준비돼 있다.
 window.addEventListener('load', () => {

@@ -96,7 +96,6 @@ div.copyright a {
   }
 }
 
-
 #settings {
   position: fixed;
   bottom: 1rem;
@@ -110,7 +109,9 @@ div.copyright a {
   display: flex;
   visibility: visible;
   opacity: 1;
-  transition: visibility 0s, opacity 1s linear;
+  transition:
+    visibility 0s,
+    opacity 1s linear;
 
   &.hide {
     opacity: 0;
@@ -134,7 +135,8 @@ div.copyright a {
     font-size: 14pt;
   }
 
-  button, .btn {
+  button,
+  .btn {
     color: #fefefe;
     background: #222;
     border: none;
@@ -164,7 +166,7 @@ div.copyright a {
 
     &.new::before {
       position: absolute;
-      background: #AA0000;
+      background: #aa0000;
       color: white;
       content: 'NEW';
       font-size: 9px;
@@ -249,7 +251,7 @@ div.copyright a {
           flex: 1 1 0;
           min-width: 0;
 
-          input[type=number] {
+          input[type='number'] {
             width: 0;
           }
         }
@@ -270,7 +272,7 @@ div.copyright a {
     background: #999;
   }
 
-  input[type=checkbox] {
+  input[type='checkbox'] {
     width: 50px;
     display: inline-block;
     padding-right: 63px;
@@ -299,7 +301,7 @@ div.copyright a {
       width: 25px;
       height: 25px;
       background: #ccc;
-      transition: transform .2s;
+      transition: transform 0.2s;
     }
 
     &:checked:after {
@@ -357,7 +359,7 @@ div.copyright a {
       }
     }
 
-    input[type=number] {
+    input[type='number'] {
       box-sizing: border-box;
       text-align: center;
     }
@@ -383,7 +385,7 @@ div.copyright a {
   h2 {
     background-color: #58c9af;
     margin: -10px -10px 0 -10px;
-    padding: 10px 5px 10px .5em;
+    padding: 10px 5px 10px 0.5em;
     border-bottom: 4px solid #2c8470;
     display: flex;
     align-items: center;
@@ -395,11 +397,11 @@ div.copyright a {
   }
 
   div.notice-body {
-    padding: 0 .5em;
+    padding: 0 0.5em;
 
     h3 {
       font-size: 1.5em;
-      margin: .83em 0;
+      margin: 0.83em 0;
     }
   }
 
@@ -442,7 +444,9 @@ div.copyright a {
     overflow: hidden;
     opacity: 1;
     visibility: visible;
-    transition: visibility 0s, opacity 1s linear;
+    transition:
+      visibility 0s,
+      opacity 1s linear;
 
     &.hide {
       opacity: 0;
@@ -477,11 +481,11 @@ div.copyright a {
       height: auto;
       display: block;
       border-bottom: 1px solid #555;
-      padding: .5rem 0;
+      padding: 0.5rem 0;
 
       label {
         width: 100%;
-        margin-bottom: .5rem;
+        margin-bottom: 0.5rem;
         padding-left: 0;
         display: block;
       }
@@ -499,10 +503,10 @@ div.copyright a {
 
         label {
           order: 0;
-          margin-bottom: .3rem;
+          margin-bottom: 0.3rem;
         }
 
-        input[type=checkbox] {
+        input[type='checkbox'] {
           order: 1;
         }
       }
@@ -522,7 +526,6 @@ div.copyright a {
       }
     }
   }
-
 
   #notice {
     position: fixed;
@@ -544,9 +547,7 @@ div.copyright a {
     div.notice-body {
       flex-grow: 1;
     }
-
   }
-
 }
 
 div.toast {
@@ -559,7 +560,9 @@ div.toast {
   bottom: 10px;
   left: 50%;
   z-index: 1000;
-  animation: .2s linear fade-in, .2s linear 1s reverse fade-in;
+  animation:
+    0.2s linear fade-in,
+    0.2s linear 1s reverse fade-in;
 }
 
 @keyframes fade-in {
@@ -580,29 +583,26 @@ div.toast {
   width: 100%;
   align-items: center;
   justify-content: center;
-  background: repeating-linear-gradient(
-          45deg,
-          #ffaa00,
-          #ffaa00 20px,
-          #222222 20px,
-          #222222 40px
-  );
+  background: repeating-linear-gradient(45deg, #ffaa00, #ffaa00 20px, #222222 20px, #222222 40px);
   color: white;
   font-size: 1.5em;
   font-weight: bold;
-  border-radius: .5em;
+  border-radius: 0.5em;
   margin-bottom: 1em;
   text-decoration: none;
-  text-shadow: -2px 0px black, 0px 2px black, 2px 0px black, 0px -2px black;
+  text-shadow:
+    -2px 0px black,
+    0px 2px black,
+    2px 0px black,
+    0px -2px black;
 }
-
 
 .shop-button {
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  padding: .2em .4em .4em .4em;
+  padding: 0.2em 0.4em 0.4em 0.4em;
   margin: 0 auto;
   width: fit-content;
 
@@ -615,7 +615,7 @@ div.toast {
   img {
     width: 48px;
     height: 48px;
-    margin-right: .2em;
+    margin-right: 0.2em;
     margin-bottom: -4px;
   }
 
