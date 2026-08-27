@@ -219,11 +219,7 @@
         });
       }
       document.querySelector('#settings').classList.add('hide');
-      if (window.ads) {
-        window.ads.beginRound(() => window.roulette.start());
-      } else {
-        window.roulette.start();
-      }
+      window.roulette.start();
     });
 
     document.querySelector('#chkAutoRecording').addEventListener('change', (e) => {
@@ -250,7 +246,6 @@
 
     window.roulette.addEventListener('goal', () => {
       ready = false;
-      if (window.ads) window.ads.showResult();
       setTimeout(() => {
         document.querySelector('#settings').classList.remove('hide');
       }, 3000);
@@ -442,7 +437,7 @@
     <button id="closeNotice" data-trans>Close</button>
   </div>
 </div>
-<div class="copyright">&copy; 2022-2026. <a href="https://lazygyu.net" target="_blank">lazygyu</a> | <a href="https://marblerouletteshop.com/advertise" target="_blank">광고문의</a>
+<div class="copyright">&copy; 2022-2026. <a href="https://lazygyu.net" target="_blank">lazygyu</a>
 </div>
 </body>
 </html>
