@@ -13,12 +13,12 @@ This is a lucky draw by dropping marbles.
 # Development
 
 ```shell
-> yarn
-> yarn dev
+> npm install
+> npm run dev
 ```
 
 # Build
 
 ```shell
-> yarn build
+> npm run build
 ```
