@@ -135,7 +135,7 @@ export class Roulette extends EventTarget {
     if (this._stage) {
       this._camera.update({
         marbles: this._marbles,
-        stage: this._stage,
+        stage: this._stage!,
         needToZoom: this._goalDist < zoomThreshold,
         targetIndex: this._winners.length > 0 ? this._targetIndex : 0,
       });
@@ -169,7 +169,7 @@ export class Roulette extends EventTarget {
     }
 
     const targetIndex = this._targetIndex;
-    const topY = this._marbles[targetIndex] ? this._marbles[targetIndex].y : 0;
+    const topY = this._marbles[targetIndex]?.y ?? 0;
     this._goalDist = Math.abs(this._stage.zoomY - topY);
     this._timeScale = this._calcTimeScale();
 
@@ -216,7 +216,11 @@ export class Roulette extends EventTarget {
   private _calcTimeScale(): number {
     if (!this._stage) return 1;
     const targetIndex = this._targetIndex;
-    if (this._winners.length < this._winnerRange.end + 1 && this._goalDist < zoomThreshold) {
+    if (
+      this._winners.length < this._winnerRange.end + 1 &&
+      this._goalDist < zoomThreshold &&
+      this._marbles[targetIndex]
+    ) {
       if (
         this._marbles[targetIndex].y > this._stage.zoomY - zoomThreshold * 1.2 &&
         (this._marbles[targetIndex - 1] || this._marbles[targetIndex + 1])
@@ -314,8 +318,9 @@ export class Roulette extends EventTarget {
     });
 
     ['MouseMove', 'DblClick'].forEach((ev) => {
-      // @ts-expect-error
-      canvas.addEventListener(ev.toLowerCase().replace('mouse', 'pointer'), this.mouseHandler.bind(this, ev));
+      canvas.addEventListener(ev.toLowerCase().replace('mouse', 'pointer'), (e) =>
+        this.mouseHandler(ev as MouseEventName, e as MouseEvent)
+      );
     });
     canvas.addEventListener('contextmenu', (e) => {
       e.preventDefault();
