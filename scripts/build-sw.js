@@ -14,8 +14,8 @@
 //
 // 이 파일은 최소 1년(2027-08까지) 유지해야 한다. 404가 되면 회수 경로가 끊긴다.
 
-const assert = require('node:assert');
-const { readFileSync, writeFileSync } = require('node:fs');
+import assert from 'node:assert';
+import { readFileSync, writeFileSync } from 'node:fs';
 
 // 캐시 이름을 필터링하는 이유: github.io는 origin을 다른 프로젝트 페이지와
 // 공유한다. caches.keys()를 전부 지우면 남의 프로젝트 캐시까지 지운다.
