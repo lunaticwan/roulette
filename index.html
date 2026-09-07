@@ -352,7 +352,7 @@
     <h1 class="sr-only">Marble Roulette - 랜덤 추첨기</h1>
     <div id="settings" class="settings">
       <div class="right">
-        <button id="btnToggleSettings" class="btn-toggle-settings">
+        <button id="btnToggleSettings" class="btn-toggle-settings" title="Settings" data-trans="title">
           <span data-trans>Settings</span>
           <i class="toggle-arrow">▲</i>
         </button>
@@ -362,7 +362,7 @@
               <i class="icon map"></i>
               <span data-trans>Map</span>
             </label>
-            <select id="sltMap"></select>
+            <select id="sltMap" title="Map" data-trans="title"></select>
           </div>
           <div class="row row-toggles">
             <div class="toggle-item">
@@ -388,20 +388,20 @@
             <div class="btn-group">
               <button class="btn-winner btn-first-winner active" data-trans>First</button>
               <button class="btn-winner btn-last-winner" data-trans>Last</button>
-              <input type="number" id="in_winningRank" value="1" min="1" />
+              <input type="number" id="in_winningRank" value="1" min="1" title="Winning Rank" data-trans="title" />
               <button class="btn-winner btn-multi-winner" data-trans>Multiple</button>
             </div>
           </div>
           <div class="row row-range">
             <label></label>
             <div class="btn-group range-group">
-              <input type="number" id="in_rangeStart" value="1" min="1" />
+              <input type="number" id="in_rangeStart" value="1" min="1" title="Start Rank" data-trans="title" />
               <span class="range-sep">~</span>
-              <input type="number" id="in_rangeEnd" value="3" min="1" />
+              <input type="number" id="in_rangeEnd" value="3" min="1" title="End Rank" data-trans="title" />
             </div>
           </div>
           <div class="row row-theme">
-            <div class="theme">
+            <div class="theme" title="Theme" data-trans="title">
               <i class="icon sun"></i>
               <input type="checkbox" id="chkDarkMode" checked />
               <i class="icon moon"></i>
@@ -418,7 +418,7 @@
         >
 수박*2,키위*2,귤*2</textarea>
         <div class="actions">
-          <button id="btnNotice">
+          <button id="btnNotice" title="Notice" data-trans="title">
             <i class="icon megaphone"></i>
           </button>
           <a
@@ -427,15 +427,16 @@
             id="btnShop"
             class="btn new"
             title="MarbleRoulette Shop"
+            data-trans="title"
           >
             <img src="assets/images/marblerouletteshop.png" />
           </a>
           <div class="sep"></div>
-          <button id="btnShuffle">
+          <button id="btnShuffle" title="Shuffle" data-trans="title">
             <i class="icon shuffle"></i>
             <span data-trans>Shuffle</span>
           </button>
-          <button id="btnStart">
+          <button id="btnStart" title="Start" data-trans="title">
             <i class="icon play"></i>
             <span data-trans>Start</span>
           </button>
@@ -443,7 +444,7 @@
       </div>
     </div>
     <div id="notice">
-      <h2>Notice</h2>
+      <h2 data-trans>Notice</h2>
       <div class="notice-body">
         <h3>커스텀 룰렛 교사 특별 연장 안내</h3>
         <p>
