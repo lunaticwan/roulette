@@ -40,6 +40,15 @@ function setLocale(newLocale: string) {
   translatePage();
 }
 
+export function getText(key: string): string {
+  const currentLocale =
+    locale || (getBrowserLocale() in Translations ? (getBrowserLocale() as TranslatedLanguages) : defaultLocale);
+  if (currentLocale in Translations && key in Translations[currentLocale]) {
+    return Translations[currentLocale][key as TranslationKeys];
+  }
+  return key;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   console.log('localization loaded');
   const browserLocale = getBrowserLocale();
@@ -48,3 +57,4 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 (window as any).translateElement = translateElement;
+(window as any).getText = getText;
