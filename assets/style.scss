@@ -67,10 +67,6 @@ div.copyright a {
     mask-image: url('images/shuffle.svg');
   }
 
-  &.megaphone {
-    mask-image: url('images/megaphone.svg');
-  }
-
   &.record {
     mask-image: url('images/record.svg');
   }
@@ -155,27 +151,6 @@ div.copyright a {
       background: rgba(0, 0, 0, 0.5);
     }
 
-    &#btnShop {
-      height: 35px;
-
-      img {
-        width: 25px;
-        height: 25px;
-      }
-    }
-
-    &.new::before {
-      position: absolute;
-      background: #aa0000;
-      color: white;
-      content: 'NEW';
-      font-size: 9px;
-      padding: 2px 4px;
-      right: -10px;
-      top: -4px;
-      border-radius: 6px;
-      z-index: 1;
-    }
   }
 
   div.theme {
@@ -366,82 +341,16 @@ div.copyright a {
   }
 }
 
-#notice {
-  display: none;
-  position: fixed;
-  overflow: hidden;
-  top: 50%;
-  left: 50%;
-  width: 500px;
-  max-width: 90%;
-  transform: translate(-50%, -50%);
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 30px;
-  z-index: 1001;
-  padding: 10px 10px;
-  color: #333;
-  flex-direction: column;
-
-  h2 {
-    background-color: #58c9af;
-    margin: -10px -10px 0 -10px;
-    padding: 10px 5px 10px 0.5em;
-    border-bottom: 4px solid #2c8470;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: black;
-    text-transform: uppercase;
-    font-weight: bold;
-    font-size: 2em;
-  }
-
-  div.notice-body {
-    padding: 0 0.5em;
-
-    h3 {
-      font-size: 1.5em;
-      margin: 0.83em 0;
-    }
-  }
-
-  div.notice-action {
-    display: flex;
-    justify-content: center;
-
-    button {
-      color: #fefefe;
-      background: #222;
-      border: none;
-      border-radius: 10px;
-      padding: 5px 10px;
-      position: relative;
-      overflow: hidden;
-      width: 50%;
-      height: 50px;
-      font-size: 20px;
-
-      &:active:after {
-        content: '';
-        position: absolute;
-        left: 0;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.5);
-      }
-    }
-  }
-}
-
 @media screen and (max-width: 750px) {
   #settings {
-    bottom: 60px;
+    bottom: 24px;
+    left: 1rem;
     display: block;
     min-width: 0;
     max-width: 100%;
     width: calc(100% - 2rem);
     overflow: hidden;
+    padding: 12px;
     opacity: 1;
     visibility: visible;
     transition:
@@ -459,9 +368,11 @@ div.copyright a {
       justify-content: center;
       gap: 6px;
       width: 100%;
-      margin-bottom: 6px;
+      min-height: 44px;
+      margin-bottom: 8px;
       cursor: pointer;
-      font-size: 11pt;
+      font-size: 12pt;
+      font-weight: bold;
 
       .toggle-arrow {
         font-style: normal;
@@ -473,21 +384,53 @@ div.copyright a {
     }
 
     textarea {
-      min-height: 2.5rem;
-      font-size: 11pt;
+      min-height: 3.5rem;
+      font-size: 12pt;
+      padding: 8px;
+      border-radius: 6px;
+    }
+
+    div.left {
+      .actions {
+        margin-top: 8px;
+        gap: 6px;
+
+        button,
+        .btn {
+          min-height: 44px;
+          font-size: 11pt;
+          padding: 8px 12px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex: 1;
+        }
+      }
     }
 
     div.right div.row {
       height: auto;
       display: block;
       border-bottom: 1px solid #555;
-      padding: 0.5rem 0;
+      padding: 0.75rem 0;
 
       label {
         width: 100%;
         margin-bottom: 0.5rem;
         padding-left: 0;
         display: block;
+        font-size: 11pt;
+      }
+
+      select,
+      input[type='number'] {
+        min-height: 38px;
+        font-size: 11pt;
+      }
+
+      .btn-group > * {
+        min-height: 38px;
+        font-size: 11pt;
       }
 
       &.row-toggles {
@@ -521,31 +464,29 @@ div.copyright a {
       }
 
       .icon {
-        width: 15px;
-        height: 15px;
+        width: 18px;
+        height: 18px;
       }
     }
   }
+}
 
-  #notice {
-    position: fixed;
-    box-sizing: border-box;
-    top: 0;
-    left: 0;
-    width: 100%;
-    max-width: 100%;
-    height: 100%;
-    transform: none;
-    background: rgba(255, 255, 255, 0.9);
-    border-radius: 4px;
-    z-index: 1001;
-    padding: 5px 10px;
-    color: #333;
-    display: none;
-    flex-direction: column;
+@media screen and (max-width: 480px) {
+  #settings {
+    left: 0.5rem;
+    width: calc(100% - 1rem);
+    bottom: 16px;
+    padding: 10px;
 
-    div.notice-body {
-      flex-grow: 1;
+    div.left {
+      .actions {
+        button,
+        .btn {
+          min-height: 44px;
+          font-size: 10.5pt;
+          padding: 6px 8px;
+        }
+      }
     }
   }
 }
@@ -575,51 +516,4 @@ div.toast {
     opacity: 1;
     transform: translate(-50%, 0);
   }
-}
-
-.link_donation {
-  display: flex;
-  padding: 1em;
-  width: 100%;
-  align-items: center;
-  justify-content: center;
-  background: repeating-linear-gradient(45deg, #ffaa00, #ffaa00 20px, #222222 20px, #222222 40px);
-  color: white;
-  font-size: 1.5em;
-  font-weight: bold;
-  border-radius: 0.5em;
-  margin-bottom: 1em;
-  text-decoration: none;
-  text-shadow:
-    -2px 0px black,
-    0px 2px black,
-    2px 0px black,
-    0px -2px black;
-}
-
-.shop-button {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  padding: 0.2em 0.4em 0.4em 0.4em;
-  margin: 0 auto;
-  width: fit-content;
-
-  color: white;
-  font-size: 32px;
-  line-height: 48px;
-  font-weight: bold;
-  text-decoration: none;
-
-  img {
-    width: 48px;
-    height: 48px;
-    margin-right: 0.2em;
-    margin-bottom: -4px;
-  }
-
-  background-color: #0077ff;
-  border: 2px solid black;
-  border-radius: 10px;
 }
