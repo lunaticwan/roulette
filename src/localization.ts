@@ -1,9 +1,10 @@
 import { type TranslatedLanguages, type TranslationKeys, Translations } from './data/languages';
 
-const defaultLocale: TranslatedLanguages = 'en';
+const defaultLocale: TranslatedLanguages = 'ko';
 let locale: TranslatedLanguages | undefined;
 
 function getBrowserLocale() {
+  if (typeof navigator === 'undefined') return 'ko';
   return navigator.language.split('-')[0];
 }
 
@@ -26,13 +27,16 @@ function translateElement(element: Element) {
 }
 
 function translatePage() {
+  if (typeof document === 'undefined') return;
   document.querySelectorAll('[data-trans]').forEach(translateElement);
 }
 
 function setLocale(newLocale: string) {
   if (newLocale === locale) return;
 
-  document.documentElement.lang = newLocale;
+  if (typeof document !== 'undefined') {
+    document.documentElement.lang = newLocale;
+  }
 
   const newLocaleLower = newLocale.toLocaleLowerCase();
 
@@ -41,20 +45,26 @@ function setLocale(newLocale: string) {
 }
 
 export function getText(key: string): string {
-  const currentLocale =
-    locale || (getBrowserLocale() in Translations ? (getBrowserLocale() as TranslatedLanguages) : defaultLocale);
+  const currentLocale = locale || defaultLocale;
   if (currentLocale in Translations && key in Translations[currentLocale]) {
     return Translations[currentLocale][key as TranslationKeys];
+  }
+  if (key in Translations.ko) {
+    return Translations.ko[key as TranslationKeys];
   }
   return key;
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  console.log('localization loaded');
-  const browserLocale = getBrowserLocale();
-  console.log('detected locale: ', browserLocale);
-  setLocale(browserLocale);
-});
+if (typeof document !== 'undefined') {
+  document.addEventListener('DOMContentLoaded', () => {
+    console.log('localization loaded');
+    const browserLocale = getBrowserLocale();
+    console.log('detected locale: ', browserLocale);
+    setLocale(browserLocale);
+  });
+}
 
-(window as any).translateElement = translateElement;
-(window as any).getText = getText;
+if (typeof window !== 'undefined') {
+  (window as any).translateElement = translateElement;
+  (window as any).getText = getText;
+}

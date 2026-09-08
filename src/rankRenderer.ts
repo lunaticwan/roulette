@@ -76,7 +76,7 @@ export class RankRenderer implements UIObject {
 
     ctx.save();
     ctx.textAlign = 'right';
-    ctx.font = '10pt sans-serif';
+    ctx.font = '10pt Pretendard, sans-serif';
     ctx.fillStyle = '#666';
     ctx.fillText(`${winners.length} / ${winners.length + marbles.length}`, width - 5, this.fontHeight);
 
@@ -95,7 +95,7 @@ export class RankRenderer implements UIObject {
       ctx.fillRect(width - 150, bandY, 3, bandH);
     }
 
-    ctx.font = 'bold 11pt sans-serif';
+    ctx.font = 'bold 11pt Pretendard, sans-serif';
     if (theme.rankStroke) {
       ctx.lineWidth = 2;
       ctx.strokeStyle = theme.rankStroke;
@@ -108,7 +108,7 @@ export class RankRenderer implements UIObject {
         ctx.fillText(`${this.isWinningRank(rank) ? '☆' : '\u2714'} ${marble.name} #${rank + 1}`, startX, 20 + y);
       }
     });
-    ctx.font = '10pt sans-serif';
+    ctx.font = '10pt Pretendard, sans-serif';
     marbles.forEach((marble: { hue: number; name: string }, rank: number) => {
       const y = (rank + winners.length) * this.fontHeight;
       if (y >= startY && y <= startY + ctx.canvas.height) {

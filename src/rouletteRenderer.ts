@@ -212,7 +212,7 @@ export class RouletteRenderer {
     this.ctx.scale(initialZoom, initialZoom);
     this.ctx.textAlign = 'left';
     this.ctx.textBaseline = 'top';
-    this.ctx.font = '0.4pt sans-serif';
+    this.ctx.font = '0.4pt Pretendard, sans-serif';
     this.ctx.lineWidth = 3 / (renderParameters.camera.zoom + initialZoom);
     renderParameters.camera.renderScene(this.ctx, () => {
       this.onBeforeEntities();
@@ -340,9 +340,9 @@ export class RouletteRenderer {
     const lineHeight = Math.min(24, Math.max(14, h * 0.042));
     const pad = lineHeight * 0.6;
     const rankWidth = lineHeight * 1.9;
-    const headerFont = `bold ${lineHeight * 0.7}px sans-serif`;
-    const rankFont = `${lineHeight * 0.6}px sans-serif`;
-    const nameFont = `bold ${lineHeight * 0.72}px sans-serif`;
+    const headerFont = `bold ${lineHeight * 0.7}px Pretendard, sans-serif`;
+    const rankFont = `${lineHeight * 0.6}px Pretendard, sans-serif`;
+    const nameFont = `bold ${lineHeight * 0.72}px Pretendard, sans-serif`;
 
     // 확정 전에는 골인한 당첨자만, 확정 후에는 최종 명단(조기 확정분 포함)을 쓴다
     const confirmed = result ?? winners.slice(start, end + 1);
@@ -455,7 +455,7 @@ export class RouletteRenderer {
     ctx.textBaseline = 'middle';
     ctx.textAlign = 'center';
     ctx.fillStyle = theme.winnerText;
-    ctx.font = `bold ${lineHeight * 1.1}px sans-serif`;
+    ctx.font = `bold ${lineHeight * 1.1}px Pretendard, sans-serif`;
     const winnersTitle = getText('Winners');
     ctx.fillText(`${winnersTitle} (${winners.length})`, w / 2, panelY + titleHeight / 2);
 
@@ -477,12 +477,12 @@ export class RouletteRenderer {
 
       ctx.textAlign = 'right';
       ctx.fillStyle = theme.winnerText;
-      ctx.font = `${lineHeight * 0.6}px sans-serif`;
+      ctx.font = `${lineHeight * 0.6}px Pretendard, sans-serif`;
       ctx.fillText(`#${winnerRange.start + i + 1}`, x + rankWidth * 0.8, y);
 
       ctx.textAlign = 'left';
       ctx.fillStyle = `hsl(${marble.hue} 100% ${theme.marbleLightness}%)`;
-      ctx.font = `bold ${lineHeight * 0.75}px sans-serif`;
+      ctx.font = `bold ${lineHeight * 0.75}px Pretendard, sans-serif`;
       ctx.fillText(marble.name, x + rankWidth, y);
       ctx.restore();
     });
@@ -529,7 +529,7 @@ export class RouletteRenderer {
     const titleFontSize = Math.max(20, Math.round(48 * scale));
     const nameFontSize = Math.max(26, Math.round(72 * scale));
 
-    this.ctx.font = `bold ${titleFontSize}px sans-serif`;
+    this.ctx.font = `bold ${titleFontSize}px Pretendard, sans-serif`;
     this.ctx.textAlign = 'right';
     this.ctx.lineWidth = Math.max(2, Math.round(4 * scale));
     const textRightX = marbleCenterX - marbleSize / 2 - Math.round(15 * scale);
@@ -543,7 +543,7 @@ export class RouletteRenderer {
     }
     this.ctx.fillText(winnerTitle, textRightX, titleY);
 
-    this.ctx.font = `bold ${nameFontSize}px sans-serif`;
+    this.ctx.font = `bold ${nameFontSize}px Pretendard, sans-serif`;
     this.ctx.fillStyle = `hsl(${winner.hue} 100% ${theme.marbleLightness})`;
     if (theme.winnerOutline) {
       this.ctx.strokeText(winner.name, textRightX, nameY);
