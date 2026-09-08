@@ -491,19 +491,21 @@ export class RouletteRenderer {
   }
 
   private renderWinner(winner: Marble, theme: ColorTheme) {
+    const sceneW = this._sceneCanvas.width;
+    const sceneH = this._sceneCanvas.height;
+
+    const isSmallScreen = sceneW < 500;
+    const bannerWidth = isSmallScreen ? sceneW : sceneW / 2;
+    const bannerX = isSmallScreen ? 0 : sceneW / 2;
+
     this.ctx.save();
     this.ctx.fillStyle = theme.winnerBackground;
-    this.ctx.fillRect(
-      this._sceneCanvas.width / 2,
-      this._sceneCanvas.height - winnerAreaHeight,
-      this._sceneCanvas.width / 2,
-      winnerAreaHeight
-    );
+    this.ctx.fillRect(bannerX, sceneH - winnerAreaHeight, bannerWidth, winnerAreaHeight);
 
-    // Draw marble image or colored circle
-    const marbleSize = 100;
-    const marbleCenterX = this._sceneCanvas.width - marbleSize / 2 - 20;
-    const marbleCenterY = this._sceneCanvas.height - winnerAreaHeight / 2;
+    const scale = Math.min(1, sceneW / 640);
+    const marbleSize = Math.max(50, Math.min(100, Math.round(100 * scale)));
+    const marbleCenterX = bannerX + bannerWidth - marbleSize / 2 - Math.round(20 * scale);
+    const marbleCenterY = sceneH - winnerAreaHeight / 2;
     const marbleImage = this.getMarbleImage(winner.name);
 
     if (marbleImage) {
@@ -524,22 +526,29 @@ export class RouletteRenderer {
     this.ctx.fillStyle = theme.winnerText;
     this.ctx.strokeStyle = theme.winnerOutline;
 
-    this.ctx.font = 'bold 48px sans-serif';
-    this.ctx.textAlign = 'right';
-    this.ctx.lineWidth = 4;
-    const textRightX = marbleCenterX - marbleSize / 2 - 20;
-    const winnerTitle = getText('Winner');
-    if (theme.winnerOutline) {
-      this.ctx.strokeText(winnerTitle, textRightX, this._sceneCanvas.height - 120 + WINNER_TEXT_OFFSET);
-    }
+    const titleFontSize = Math.max(20, Math.round(48 * scale));
+    const nameFontSize = Math.max(26, Math.round(72 * scale));
 
-    this.ctx.fillText(winnerTitle, textRightX, this._sceneCanvas.height - 120 + WINNER_TEXT_OFFSET);
-    this.ctx.font = 'bold 72px sans-serif';
+    this.ctx.font = `bold ${titleFontSize}px sans-serif`;
+    this.ctx.textAlign = 'right';
+    this.ctx.lineWidth = Math.max(2, Math.round(4 * scale));
+    const textRightX = marbleCenterX - marbleSize / 2 - Math.round(15 * scale);
+    const winnerTitle = getText('Winner');
+
+    const titleY = sceneH - Math.round(110 * scale) + WINNER_TEXT_OFFSET;
+    const nameY = sceneH - Math.round(50 * scale) + WINNER_TEXT_OFFSET;
+
+    if (theme.winnerOutline) {
+      this.ctx.strokeText(winnerTitle, textRightX, titleY);
+    }
+    this.ctx.fillText(winnerTitle, textRightX, titleY);
+
+    this.ctx.font = `bold ${nameFontSize}px sans-serif`;
     this.ctx.fillStyle = `hsl(${winner.hue} 100% ${theme.marbleLightness})`;
     if (theme.winnerOutline) {
-      this.ctx.strokeText(winner.name, textRightX, this._sceneCanvas.height - 55 + WINNER_TEXT_OFFSET);
+      this.ctx.strokeText(winner.name, textRightX, nameY);
     }
-    this.ctx.fillText(winner.name, textRightX, this._sceneCanvas.height - 55 + WINNER_TEXT_OFFSET);
+    this.ctx.fillText(winner.name, textRightX, nameY);
     this.ctx.restore();
   }
 }
