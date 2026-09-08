@@ -1,10 +1,14 @@
 name: Build Electron Windows App
 
 on:
-  workflow_dispatch:
   push:
+    branches: ['main']
     tags:
       - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build-windows:
@@ -32,3 +36,26 @@ jobs:
           name: iM-Bank-Roulette-Windows-x64
           path: dist-electron/*.exe
           if-no-files-found: error
+
+      - name: Create or Update GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_type == 'tag' && github.ref_name || 'latest' }}
+          name: ${{ github.ref_type == 'tag' && github.ref_name || 'Latest Release' }}
+          files: dist-electron/*.exe
+          draft: false
+          prerelease: false
+          make_latest: 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate Workflow Summary
+        if: always()
+        shell: bash
+        run: |
+          echo "# 🚀 Electron Windows Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## 📦 Download Links" >> $GITHUB_STEP_SUMMARY
+          echo "- 🏷️ **GitHub Release**: [View Releases](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/releases)" >> $GITHUB_STEP_SUMMARY
+          echo "- 📌 **Latest Release Assets**: [Download Latest Executables](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/releases/tag/latest)" >> $GITHUB_STEP_SUMMARY
+          echo "- 💾 **Workflow Artifacts**: [View Run Artifacts](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID})" >> $GITHUB_STEP_SUMMARY
