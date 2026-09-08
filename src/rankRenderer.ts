@@ -1,6 +1,7 @@
 import type { Marble } from './marble';
 import type { WinnerRange } from './options';
 import type { RenderParameters } from './rouletteRenderer';
+import { getText } from './localization';
 import type { Rect } from './types/rect.type';
 import type { MouseEventArgs, UIObject } from './UIObject';
 import { bound } from './utils/bound.decorator';
@@ -39,11 +40,11 @@ export class RankRenderer implements UIObject {
           })
         );
 
-        tsv.unshift(['Rank', 'Name', 'Winner'].join('\t'));
+        tsv.unshift([getText('Rank'), getText('Name'), getText('Winner')].join('\t'));
 
         navigator.clipboard.writeText(tsv.join('\n')).then(() => {
           if (this.messageHandler) {
-            this.messageHandler('The result has been copied');
+            this.messageHandler(getText('The result has been copied'));
           }
         });
       }

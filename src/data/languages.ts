@@ -31,6 +31,8 @@ export const Translations = {
     'Start Rank': 'Start Rank',
     'End Rank': 'End Rank',
     Theme: 'Theme',
+    Rank: 'Rank',
+    Name: 'Name',
   },
   ko: {
     'Enter names below': '이름 입력',
@@ -64,6 +66,8 @@ export const Translations = {
     'Start Rank': '시작 순위',
     'End Rank': '끝 순위',
     Theme: '테마 변경',
+    Rank: '순위',
+    Name: '이름',
   },
 } as const;
 
