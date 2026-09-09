@@ -29,7 +29,6 @@ export type RenderParameters = {
   theme: ColorTheme;
 };
 
-const MAX_DISPLAY_WIDTH = 1920;
 const WINNER_TEXT_OFFSET = 30;
 const RESULT_PANEL_MAX_WIDTH_RATIO = 0.9;
 const RESULT_PANEL_MAX_HEIGHT_RATIO = 0.8;
@@ -85,6 +84,9 @@ export class RouletteRenderer {
   protected ctx!: CanvasRenderingContext2D;
   private _displayCtx!: CanvasRenderingContext2D;
   public sizeFactor = 1;
+  private _dpr = 1;
+  private _logicalWidth = canvasWidth;
+  private _logicalHeight = canvasHeight;
 
   protected _images: { [key: string]: HTMLImageElement } = {};
   protected _theme: ColorTheme = Themes.dark;
@@ -102,11 +104,15 @@ export class RouletteRenderer {
   }
 
   get width() {
-    return this._sceneCanvas.width;
+    return this._logicalWidth;
   }
 
   get height() {
-    return this._sceneCanvas.height;
+    return this._logicalHeight;
+  }
+
+  get dpr() {
+    return this._dpr;
   }
 
   get canvas() {
@@ -140,15 +146,22 @@ export class RouletteRenderer {
       const realSize = entries ? entries[0].contentRect : this._canvas.getBoundingClientRect();
       if (realSize.width <= 0 || realSize.height <= 0) return;
 
-      const width = Math.max(realSize.width / 2, 640);
-      const height = (width / realSize.width) * realSize.height;
-      this._sceneCanvas.width = width;
-      this._sceneCanvas.height = height;
-      this.sizeFactor = width / realSize.width;
+      const dpr = Math.min(window.devicePixelRatio || 1, 3);
+      this._dpr = dpr;
 
-      const displayWidth = Math.min(realSize.width, MAX_DISPLAY_WIDTH);
-      this._canvas.width = displayWidth;
-      this._canvas.height = (displayWidth / realSize.width) * realSize.height;
+      this._logicalWidth = realSize.width;
+      this._logicalHeight = realSize.height;
+
+      const physicalWidth = Math.round(realSize.width * dpr);
+      const physicalHeight = Math.round(realSize.height * dpr);
+
+      this._sceneCanvas.width = physicalWidth;
+      this._sceneCanvas.height = physicalHeight;
+
+      this._canvas.width = physicalWidth;
+      this._canvas.height = physicalHeight;
+
+      this.sizeFactor = 1;
     };
 
     const resizeObserver = new ResizeObserver(resizing);
@@ -167,7 +180,7 @@ export class RouletteRenderer {
     });
   }
 
-  private async _load(): Promise<void> {
+  protected async _load(): Promise<void> {
     const loadPromises = [
       { name: '챔루', imgUrl: new URL('../assets/images/chamru.png', import.meta.url) },
       { name: '쿠빈', imgUrl: new URL('../assets/images/kubin.png', import.meta.url) },
@@ -205,8 +218,12 @@ export class RouletteRenderer {
 
   render(renderParameters: RenderParameters, uiObjects: UIObject[]) {
     this._theme = renderParameters.theme;
+
+    this.ctx.save();
+    this.ctx.scale(this._dpr, this._dpr);
+
     this.ctx.fillStyle = this._theme.background;
-    this.ctx.fillRect(0, 0, this._sceneCanvas.width, this._sceneCanvas.height);
+    this.ctx.fillRect(0, 0, this._logicalWidth, this._logicalHeight);
 
     this.ctx.save();
     this.ctx.scale(initialZoom, initialZoom);
@@ -214,21 +231,25 @@ export class RouletteRenderer {
     this.ctx.textBaseline = 'top';
     this.ctx.font = '0.4pt Pretendard, sans-serif';
     this.ctx.lineWidth = 3 / (renderParameters.camera.zoom + initialZoom);
-    renderParameters.camera.renderScene(this.ctx, () => {
-      this.onBeforeEntities();
-      this.renderEntities(renderParameters.entities);
-      this.renderEffects(renderParameters);
-      this.renderMarbles(renderParameters);
-    });
+    renderParameters.camera.renderScene(
+      this.ctx,
+      () => {
+        this.onBeforeEntities();
+        this.renderEntities(renderParameters.entities);
+        this.renderEffects(renderParameters);
+        this.renderMarbles(renderParameters);
+      },
+      this._dpr
+    );
     this.ctx.restore();
     this.onAfterScene();
 
-    uiObjects.forEach((obj) =>
-      obj.render(this.ctx, renderParameters, this._sceneCanvas.width, this._sceneCanvas.height)
-    );
+    uiObjects.forEach((obj) => obj.render(this.ctx, renderParameters, this._logicalWidth, this._logicalHeight));
     renderParameters.particleManager.render(this.ctx);
     this.renderWinnerProgress(renderParameters);
     this.renderResult(renderParameters);
+
+    this.ctx.restore();
 
     this._displayCtx.drawImage(this._sceneCanvas, 0, 0, this._canvas.width, this._canvas.height);
   }
@@ -334,8 +355,8 @@ export class RouletteRenderer {
     if (end <= start) return; // 1명 추첨은 기존 하단 Winner 표시를 쓴다
 
     const ctx = this.ctx;
-    const w = this._sceneCanvas.width;
-    const h = this._sceneCanvas.height;
+    const w = this._logicalWidth;
+    const h = this._logicalHeight;
 
     const lineHeight = Math.min(24, Math.max(14, h * 0.042));
     const pad = lineHeight * 0.6;
@@ -420,8 +441,8 @@ export class RouletteRenderer {
   /** 당첨자가 여러명일 때 화면 중앙에 목록 팝업을 그린다 */
   private renderWinnerList(winners: Marble[], { theme, winnerRange }: RenderParameters) {
     const ctx = this.ctx;
-    const w = this._sceneCanvas.width;
-    const h = this._sceneCanvas.height;
+    const w = this._logicalWidth;
+    const h = this._logicalHeight;
 
     const lineHeight = Math.min(32, Math.max(16, h * 0.05));
     const padding = lineHeight;
@@ -491,8 +512,8 @@ export class RouletteRenderer {
   }
 
   private renderWinner(winner: Marble, theme: ColorTheme) {
-    const sceneW = this._sceneCanvas.width;
-    const sceneH = this._sceneCanvas.height;
+    const sceneW = this._logicalWidth;
+    const sceneH = this._logicalHeight;
 
     const isSmallScreen = sceneW < 500;
     const bannerWidth = isSmallScreen ? sceneW : sceneW / 2;
