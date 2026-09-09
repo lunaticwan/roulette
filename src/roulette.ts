@@ -471,8 +471,8 @@ export class Roulette extends EventTarget {
       const spawnWidth = Math.max((cols - 1) * 0.6, 1);
       const spawnHeight = Math.max(rows - 1, 1);
       const margin = 3;
-      const viewW = canvasWidth / initialZoom;
-      const viewH = canvasHeight / initialZoom;
+      const viewW = (this._renderer.width || canvasWidth) / initialZoom;
+      const viewH = (this._renderer.height || canvasHeight) / initialZoom;
       const zoom = Math.max(
         1.5,
         Math.min(Math.min(viewW / (spawnWidth + margin * 2), viewH / (spawnHeight + margin * 2)), 3)
