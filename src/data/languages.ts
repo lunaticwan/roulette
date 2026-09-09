@@ -31,6 +31,7 @@ export const Translations = {
     Theme: 'Theme',
     Rank: 'Rank',
     Name: 'Name',
+    'Marbles Syntax Tip': 'Tip: Use Name*Count for multiples, Name/Weight for weights.',
   },
   ko: {
     'Enter names below': '이름 입력',
@@ -64,6 +65,7 @@ export const Translations = {
     Theme: '테마 변경',
     Rank: '순위',
     Name: '이름',
+    'Marbles Syntax Tip': '팁: 이름*개수 (수량 지정), 이름/무게 (무게 지정)',
   },
 } as const;
 
