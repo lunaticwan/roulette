@@ -35,9 +35,14 @@ export class Particle {
 
   render(ctx: CanvasRenderingContext2D) {
     ctx.save();
-    ctx.globalAlpha = 1 - (this._elapsed / lifetime) ** 2;
+    const alpha = Math.max(0, 1 - (this._elapsed / lifetime) ** 2);
+    ctx.globalAlpha = alpha;
     ctx.fillStyle = this.color;
-    ctx.fillRect(this.position.x, this.position.y, 20, 20);
+    ctx.shadowColor = this.color;
+    ctx.shadowBlur = 10;
+    ctx.beginPath();
+    ctx.arc(this.position.x, this.position.y, 10, 0, Math.PI * 2);
+    ctx.fill();
     ctx.restore();
   }
 }
