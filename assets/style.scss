@@ -204,6 +204,29 @@ div.copyright a {
     flex-shrink: 1;
     order: 1;
 
+    .left-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+
+      .marble-count-badge {
+        font-size: 11px;
+        color: #ffdd66;
+        background: rgba(0, 0, 0, 0.4);
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-weight: bold;
+      }
+    }
+
+    .input-syntax-tip {
+      font-size: 11px;
+      color: #bbb;
+      margin-top: 3px;
+      margin-bottom: 6px;
+    }
+
     .actions {
       display: flex;
       align-items: center;

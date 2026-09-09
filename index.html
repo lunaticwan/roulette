@@ -65,6 +65,27 @@
         ready = names.length > 0;
         localStorage.setItem('mbr_names', names.join(','));
         applyWinnerSetting();
+        updateMarbleCounter(names);
+      }
+
+      function updateMarbleCounter(names) {
+        let totalCount = 0;
+        const uniqueParticipants = names.length;
+        names.forEach((nameStr) => {
+          const parsed = parseName(nameStr);
+          if (parsed) {
+            totalCount += parsed.count;
+          }
+        });
+        const countElem = document.querySelector('#cnt_marbles');
+        if (countElem) {
+          const lang = window.getLanguage ? window.getLanguage() : 'ko';
+          if (lang === 'ko') {
+            countElem.textContent = `총 ${totalCount}개 구슬 (${uniqueParticipants}명)`;
+          } else {
+            countElem.textContent = `Total ${totalCount} marbles (${uniqueParticipants} participants)`;
+          }
+        }
       }
 
       // 구슬 수가 바뀔 때마다 다시 호출된다. 범위 클리핑은 roulette이 하고, 잘린 결과를 input에 되돌려 쓴다.
@@ -122,7 +143,7 @@
       }
 
       let ready = false;
-      let winnerType = 'first';
+      let winnerType = 'last';
 
       document.addEventListener('DOMContentLoaded', () => {
         initialize();
@@ -307,8 +328,8 @@
               <span data-trans>The winner is</span>
             </label>
             <div class="btn-group">
-              <button class="btn-winner btn-first-winner active" data-trans>First</button>
-              <button class="btn-winner btn-last-winner" data-trans>Last</button>
+              <button class="btn-winner btn-first-winner" data-trans>First</button>
+              <button class="btn-winner btn-last-winner active" data-trans>Last</button>
               <input type="number" id="in_winningRank" value="1" min="1" title="Winning Rank" data-trans="title" />
               <button class="btn-winner btn-multi-winner" data-trans>Multiple</button>
             </div>
@@ -331,13 +352,17 @@
         </div>
       </div>
       <div class="left">
-        <h3 data-trans>Enter names below</h3>
+        <div class="left-header">
+          <h3 data-trans>Enter names below</h3>
+          <span id="cnt_marbles" class="marble-count-badge"></span>
+        </div>
         <textarea
           id="in_names"
           placeholder="Input names separated by commas or line feed here"
           data-trans="placeholder"
         >
 수박*2,키위*2,귤*2</textarea>
+        <div class="input-syntax-tip" data-trans>Marbles Syntax Tip</div>
         <div class="actions">
           <button id="btnShuffle" title="Shuffle" data-trans="title">
             <i class="icon shuffle"></i>

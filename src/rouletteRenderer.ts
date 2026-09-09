@@ -475,24 +475,44 @@ export class RouletteRenderer {
 
     ctx.save();
 
-    ctx.fillStyle = theme.winnerBackground;
+    // 배경 어둡게 오버레이
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
     ctx.fillRect(0, 0, w, h);
 
-    ctx.fillStyle = theme.background;
+    // 팝업 패널 - 황금빛 글로우 테두리와 어두운 프리미엄 카드 배경
+    const panelBg = ctx.createLinearGradient(panelX, panelY, panelX, panelY + panelH);
+    panelBg.addColorStop(0, '#1a1a24');
+    panelBg.addColorStop(1, '#0d0d12');
+
+    ctx.fillStyle = panelBg;
+    ctx.shadowBlur = 30;
+    ctx.shadowColor = 'rgba(255, 215, 0, 0.4)';
     ctx.fillRect(panelX, panelY, panelW, panelH);
-    ctx.strokeStyle = theme.winnerText;
-    ctx.lineWidth = 2;
+
+    ctx.shadowBlur = 0;
+    const goldGlow = ctx.createLinearGradient(panelX, panelY, panelX + panelW, panelY + panelH);
+    goldGlow.addColorStop(0, '#ffd700');
+    goldGlow.addColorStop(0.5, '#fff8dc');
+    goldGlow.addColorStop(1, '#cca625');
+
+    ctx.strokeStyle = goldGlow;
+    ctx.lineWidth = 2.5;
     ctx.strokeRect(panelX, panelY, panelW, panelH);
 
     ctx.textBaseline = 'middle';
     ctx.textAlign = 'center';
-    ctx.fillStyle = theme.winnerText;
-    ctx.font = `bold ${lineHeight * 1.1}px Pretendard, sans-serif`;
-    const winnersTitle = getText('Winners');
-    ctx.fillText(`${winnersTitle} (${winners.length})`, w / 2, panelY + titleHeight / 2);
 
-    // 버튼 중심을 팝업 우상단 꼭지점에 맞춰 걸쳐놓는다. 뒤가 비치지 않게 불투명하게 채우되,
-    // 검정으로 채우면 다크 테마에서 배경과 같아져 버튼으로 안 보이므로 대비되는 색을 쓴다
+    // 타이틀 텍스트 연출
+    ctx.save();
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = 'rgba(255, 215, 0, 0.6)';
+    ctx.fillStyle = goldGlow;
+    ctx.font = `bold ${lineHeight * 1.15}px Pretendard, sans-serif`;
+    const winnersTitle = getText('Winners');
+    ctx.fillText(`🏆 ${winnersTitle} (${winners.length}) 🏆`, w / 2, panelY + titleHeight / 2);
+    ctx.restore();
+
+    // 버튼 중심을 팝업 우상단 꼭지점에 맞춰 걸쳐놓는다
     this._resultCloseRect = drawCloseCircle(ctx, panelX + panelW, panelY, closeButtonSize(h), '#222');
 
     const rankWidth = lineHeight * 1.8;
@@ -508,12 +528,14 @@ export class RouletteRenderer {
       ctx.clip();
 
       ctx.textAlign = 'right';
-      ctx.fillStyle = theme.winnerText;
-      ctx.font = `${lineHeight * 0.6}px Pretendard, sans-serif`;
+      ctx.fillStyle = '#ffd700';
+      ctx.font = `bold ${lineHeight * 0.65}px Pretendard, sans-serif`;
       ctx.fillText(`#${winnerRange.start + i + 1}`, x + rankWidth * 0.8, y);
 
       ctx.textAlign = 'left';
-      ctx.fillStyle = `hsl(${marble.hue} 100% ${theme.marbleLightness}%)`;
+      ctx.shadowBlur = 8;
+      ctx.shadowColor = `hsl(${marble.hue}, 100%, 60%)`;
+      ctx.fillStyle = `hsl(${marble.hue} 100% 75%)`;
       ctx.font = `bold ${lineHeight * 0.75}px Pretendard, sans-serif`;
       ctx.fillText(marble.name, x + rankWidth, y);
       ctx.restore();
@@ -531,8 +553,24 @@ export class RouletteRenderer {
     const bannerX = isSmallScreen ? 0 : sceneW / 2;
 
     this.ctx.save();
-    this.ctx.fillStyle = theme.winnerBackground;
+
+    // 배너 테두리 및 황금빛 모서리/그라데이션 배경 연출
+    const bgGradient = this.ctx.createLinearGradient(bannerX, sceneH - winnerAreaHeight, bannerX + bannerWidth, sceneH);
+    bgGradient.addColorStop(0, 'rgba(20, 20, 30, 0.85)');
+    bgGradient.addColorStop(0.5, 'rgba(35, 30, 10, 0.9)');
+    bgGradient.addColorStop(1, 'rgba(20, 20, 30, 0.85)');
+
+    this.ctx.fillStyle = bgGradient;
     this.ctx.fillRect(bannerX, sceneH - winnerAreaHeight, bannerWidth, winnerAreaHeight);
+
+    // 상단 황금빛 루프 테두리 Line
+    const goldGradient = this.ctx.createLinearGradient(bannerX, 0, bannerX + bannerWidth, 0);
+    goldGradient.addColorStop(0, '#ffd700');
+    goldGradient.addColorStop(0.5, '#fff8dc');
+    goldGradient.addColorStop(1, '#ffd700');
+
+    this.ctx.fillStyle = goldGradient;
+    this.ctx.fillRect(bannerX, sceneH - winnerAreaHeight, bannerWidth, 3);
 
     const scale = Math.min(1, sceneW / 640);
     const marbleSize = Math.max(50, Math.min(100, Math.round(100 * scale)));
@@ -540,6 +578,10 @@ export class RouletteRenderer {
     const marbleCenterY = sceneH - winnerAreaHeight / 2;
     const marbleImage = this.getMarbleImage(winner.name);
 
+    // 구슬 뒤 후광 (Glow) 연출
+    this.ctx.save();
+    this.ctx.shadowBlur = 25;
+    this.ctx.shadowColor = `hsl(${winner.hue}, 100%, 65%)`;
     if (marbleImage) {
       this.ctx.drawImage(
         marbleImage,
@@ -551,36 +593,49 @@ export class RouletteRenderer {
     } else {
       this.ctx.beginPath();
       this.ctx.arc(marbleCenterX, marbleCenterY, marbleSize / 2, 0, Math.PI * 2);
-      this.ctx.fillStyle = `hsl(${winner.hue} 100% ${theme.marbleLightness})`;
+      this.ctx.fillStyle = `hsl(${winner.hue} 100% ${theme.marbleLightness}%)`;
       this.ctx.fill();
     }
-
-    this.ctx.fillStyle = theme.winnerText;
-    this.ctx.strokeStyle = theme.winnerOutline;
+    this.ctx.restore();
 
     const titleFontSize = Math.max(20, Math.round(48 * scale));
     const nameFontSize = Math.max(26, Math.round(72 * scale));
 
-    this.ctx.font = `bold ${titleFontSize}px Pretendard, sans-serif`;
-    this.ctx.textAlign = 'right';
-    this.ctx.lineWidth = Math.max(2, Math.round(4 * scale));
     const textRightX = marbleCenterX - marbleSize / 2 - Math.round(15 * scale);
-    const winnerTitle = getText('Winner');
+    const winnerTitle = `★ ${getText('Winner')} ★`;
 
     const titleY = sceneH - Math.round(110 * scale) + WINNER_TEXT_OFFSET;
     const nameY = sceneH - Math.round(50 * scale) + WINNER_TEXT_OFFSET;
 
-    if (theme.winnerOutline) {
-      this.ctx.strokeText(winnerTitle, textRightX, titleY);
-    }
+    // 타이틀 (WINNER) - 황금빛 글로우
+    this.ctx.save();
+    this.ctx.font = `bold ${titleFontSize}px Pretendard, sans-serif`;
+    this.ctx.textAlign = 'right';
+    this.ctx.shadowBlur = 12;
+    this.ctx.shadowColor = 'rgba(255, 215, 0, 0.8)';
+    this.ctx.fillStyle = goldGradient;
     this.ctx.fillText(winnerTitle, textRightX, titleY);
+    this.ctx.restore();
 
+    // 당첨자 이름 - 네온 화려한 글로우 및 그라데이션
+    this.ctx.save();
     this.ctx.font = `bold ${nameFontSize}px Pretendard, sans-serif`;
-    this.ctx.fillStyle = `hsl(${winner.hue} 100% ${theme.marbleLightness})`;
-    if (theme.winnerOutline) {
-      this.ctx.strokeText(winner.name, textRightX, nameY);
-    }
+    this.ctx.textAlign = 'right';
+    this.ctx.shadowBlur = 18;
+    this.ctx.shadowColor = `hsl(${winner.hue}, 100%, 60%)`;
+
+    // 텍스트 그라데이션
+    const nameGradient = this.ctx.createLinearGradient(textRightX - 200, nameY, textRightX, nameY);
+    nameGradient.addColorStop(0, '#ffffff');
+    nameGradient.addColorStop(1, `hsl(${winner.hue}, 100%, 75%)`);
+
+    this.ctx.fillStyle = nameGradient;
+    this.ctx.lineWidth = Math.max(2, Math.round(4 * scale));
+    this.ctx.strokeStyle = '#000000';
+    this.ctx.strokeText(winner.name, textRightX, nameY);
     this.ctx.fillText(winner.name, textRightX, nameY);
+    this.ctx.restore();
+
     this.ctx.restore();
   }
 }
