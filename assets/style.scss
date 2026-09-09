@@ -132,62 +132,96 @@ div.copyright a {
 
 #settings {
   position: fixed;
-  bottom: 1rem;
-  left: 1rem;
-  background: #666;
-  border-radius: 10px;
-  padding: 10px;
+  bottom: 1.25rem;
+  left: 1.25rem;
+  background: rgba(18, 22, 34, 0.78);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 16px 20px;
   z-index: 999;
-  min-width: 50%;
+  min-width: 540px;
+  gap: 20px;
 
   display: flex;
   visibility: visible;
   opacity: 1;
   transition:
-    visibility 0s,
-    opacity 1s linear;
+    visibility 0.3s,
+    opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 
   &.hide {
     opacity: 0;
     visibility: hidden;
+    transform: translateY(12px) scale(0.98);
   }
 
   h3 {
     padding: 0;
     margin: 0;
-    font-size: 12pt;
-    color: #fefefe;
+    font-size: 13px;
+    font-weight: 600;
+    color: #e2e8f0;
+    letter-spacing: -0.01em;
   }
 
   textarea {
     width: 100%;
-    // 오른쪽 칼럼이 패널 높이를 결정하면 '여러명'을 열 때 범위 행(div.row, 35px)만큼
-    // 패널이 세로로 튄다. 왼쪽이 항상 더 크도록 그만큼 미리 확보해 높이를 고정한다
     min-height: calc(5rem + 35px);
-    border: none;
-    background: #999;
-    font-size: 14pt;
-    font-family: 'Cascadia Code', 'CascadiaCode-Regular', 'Courier New', Courier, monospace;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+    background: rgba(10, 14, 23, 0.65);
+    color: #f8fafc;
+    font-size: 13px;
+    padding: 10px 12px;
+    line-height: 1.5;
+    outline: none;
+    resize: vertical;
+    transition:
+      border-color 0.2s,
+      box-shadow 0.2s,
+      background 0.2s;
+
+    &:focus {
+      border-color: #6366f1;
+      background: rgba(10, 14, 23, 0.85);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
+    }
+
+    &::placeholder {
+      color: #64748b;
+    }
   }
 
   button,
   .btn {
-    color: #fefefe;
-    background: #222;
-    border: none;
-    border-radius: 5px;
-    padding: 5px 10px;
+    color: #ffffff;
+    background: rgba(30, 41, 59, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
     position: relative;
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.2s ease;
 
-    &:active:after {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.5);
+    &:hover {
+      background: rgba(51, 65, 85, 0.9);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    &:active {
+      transform: scale(0.97);
     }
   }
 
@@ -195,8 +229,9 @@ div.copyright a {
     flex-grow: 1;
     display: flex;
     align-items: center;
-    color: white;
+    color: #cbd5e1;
     justify-content: flex-end;
+    gap: 8px;
   }
 
   div.left {
@@ -208,30 +243,59 @@ div.copyright a {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 4px;
+      margin-bottom: 6px;
 
       .marble-count-badge {
         font-size: 11px;
-        color: #ffdd66;
-        background: rgba(0, 0, 0, 0.4);
-        padding: 2px 8px;
-        border-radius: 10px;
-        font-weight: bold;
+        color: #818cf8;
+        background: rgba(99, 102, 241, 0.15);
+        border: 1px solid rgba(129, 140, 248, 0.3);
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-weight: 600;
       }
     }
 
     .input-syntax-tip {
       font-size: 11px;
-      color: #bbb;
-      margin-top: 3px;
-      margin-bottom: 6px;
+      color: #94a3b8;
+      margin-top: 4px;
+      margin-bottom: 10px;
     }
 
     .actions {
       display: flex;
       align-items: center;
       justify-content: stretch;
-      gap: 2px;
+      gap: 8px;
+
+      #btnShuffle {
+        background: rgba(30, 41, 59, 0.8);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        color: #e2e8f0;
+
+        &:hover {
+          background: rgba(51, 65, 85, 0.9);
+          color: #ffffff;
+        }
+      }
+
+      #btnStart {
+        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: #ffffff;
+        box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+
+        &:hover {
+          background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+          box-shadow: 0 6px 18px rgba(99, 102, 241, 0.5);
+          transform: translateY(-1px);
+        }
+
+        &:active {
+          transform: translateY(0) scale(0.98);
+        }
+      }
 
       div.sep {
         flex-grow: 1;
@@ -251,23 +315,33 @@ div.copyright a {
     div.row {
       display: flex;
       align-items: center;
-      height: 35px;
+      height: 38px;
+      margin-bottom: 4px;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
 
       label {
-        width: 150px;
+        width: 130px;
         flex-grow: 0;
         flex-shrink: 0;
-        padding-left: 1rem;
-        color: white;
+        padding-left: 0.5rem;
+        color: #cbd5e1;
+        font-size: 13px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 6px;
       }
 
       .toggle-item {
         width: 50%;
         display: flex;
         align-items: center;
+        gap: 6px;
       }
 
-      // div.right div.row 와 같은 자리에 두어야 display:flex 를 이긴다
       &.row-range {
         display: none;
 
@@ -277,12 +351,9 @@ div.copyright a {
 
         &.active {
           display: flex;
-          padding-left: 150px;
+          padding-left: 130px;
         }
 
-        // div.right는 콘텐츠 폭으로 잡힌다. number input의 기본 폭(~169px)이 그대로
-        // 남으면 이 행을 열 때마다 오른쪽 칼럼 전체가 넓어진다. width를 0으로 눌러
-        // intrinsic 계산에서 빼고, flex-grow로 위 행이 정한 폭만 채우게 한다
         .range-group {
           flex: 1 1 0;
           min-width: 0;
@@ -295,109 +366,154 @@ div.copyright a {
         .range-sep {
           flex: 0 0 24px;
           background: transparent;
-          color: white;
+          color: #94a3b8;
+          text-align: center;
+          font-weight: bold;
         }
       }
     }
   }
 
   select {
-    height: 25px;
+    height: 32px;
     width: 100%;
-    border-radius: 5px;
-    background: #999;
+    border-radius: 8px;
+    background: rgba(10, 14, 23, 0.65);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #f8fafc;
+    padding: 0 10px;
+    font-size: 13px;
+    outline: none;
+    cursor: pointer;
+    transition:
+      border-color 0.2s,
+      background 0.2s;
+
+    &:hover,
+    &:focus {
+      border-color: #6366f1;
+      background: rgba(10, 14, 23, 0.85);
+    }
+
+    option {
+      background: #1e293b;
+      color: #f8fafc;
+    }
   }
 
   input[type='checkbox'] {
-    width: 50px;
-    display: inline-block;
-    padding-right: 63px;
-    height: 25px;
+    appearance: none;
+    -webkit-appearance: none;
+    width: 44px;
+    height: 24px;
+    background: rgba(30, 41, 59, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 20px;
     position: relative;
-    vertical-align: middle;
+    cursor: pointer;
+    outline: none;
+    transition:
+      background 0.25s,
+      border-color 0.25s;
 
     &:before {
-      position: absolute;
-      content: '';
-      display: inline-block;
-      width: 50px;
-      height: 25px;
-      border-radius: 25px;
-      background: #999;
-      top: 0;
-      left: 0;
+      display: none;
     }
 
     &:after {
+      content: '';
       position: absolute;
-      top: 0;
-      left: 0;
-      content: '';
-      border-radius: 25px;
-      width: 25px;
-      height: 25px;
-      background: #ccc;
-      transition: transform 0.2s;
+      top: 2px;
+      left: 2px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #94a3b8;
+      transition:
+        transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+        background 0.25s;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     }
 
-    &:checked:after {
-      transform: translateX(100%);
-      background: white;
-    }
+    &:checked {
+      background: #6366f1;
+      border-color: rgba(129, 140, 248, 0.5);
 
-    &:checked:before {
-      content: '';
-      background: #00baff;
+      &:after {
+        transform: translateX(20px);
+        background: #ffffff;
+      }
     }
   }
 
   .btn-group {
     display: flex;
     justify-content: stretch;
+    background: rgba(10, 14, 23, 0.65);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+    padding: 2px;
+    gap: 2px;
 
     & > * {
       box-sizing: border-box;
       flex: 1 1 0;
       min-width: 0;
       overflow: hidden;
-      height: 25px;
-      border-radius: 0;
-      background: #999;
+      height: 28px;
+      border-radius: 7px;
+      background: transparent;
       border: none;
-      padding: 0;
-      color: #fefefe;
+      padding: 0 6px;
+      color: #94a3b8;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
 
       display: flex;
       align-items: center;
       justify-content: center;
 
-      &:first-child {
-        border-radius: 10px 0 0 10px;
-      }
-
+      &:first-child,
       &:last-child {
-        border-radius: 0 10px 10px 0;
+        border-radius: 7px;
       }
 
       &.active:before {
         content: '';
-        width: 15px;
-        height: 15px;
+        width: 12px;
+        height: 12px;
+        margin-right: 4px;
         display: inline-block;
         vertical-align: middle;
         mask-image: url('images/check.svg');
         mask-repeat: no-repeat;
-        background: white;
+        mask-size: contain;
+        background: #ffffff;
       }
 
       &.active {
-        background: #333;
+        background: #6366f1;
+        color: #ffffff;
+        font-weight: 600;
+        box-shadow: 0 2px 8px rgba(99, 102, 241, 0.35);
       }
     }
 
     input[type='number'] {
       box-sizing: border-box;
       text-align: center;
+      background: rgba(15, 23, 42, 0.8);
+      color: #f8fafc;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      outline: none;
+      font-size: 12px;
+
+      &:focus {
+        border-color: #6366f1;
+      }
     }
   }
 }

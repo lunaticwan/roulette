@@ -151,22 +151,74 @@ export class Marble {
     }
 
     const radius = this.size / 2;
-    const lightness = this.theme.marbleLightness + 25 * Math.min(1, this.impact / 500);
+    const lightness = Math.min(85, this.theme.marbleLightness + 25 * Math.min(1, this.impact / 500));
 
-    // 고성능 그래픽: 방사형 그라데이션을 적용하여 구슬에 3D 입체감 연출
-    const grad = ctx.createRadialGradient(
-      this.x - radius * 0.3,
-      this.y - radius * 0.3,
-      radius * 0.1,
+    // 1. Base 3D Sphere Radial Gradient (Depth & Outer Shadow Rim)
+    const lightX = this.x - radius * 0.35;
+    const lightY = this.y - radius * 0.35;
+
+    const baseGrad = ctx.createRadialGradient(lightX, lightY, radius * 0.05, this.x, this.y, radius);
+    baseGrad.addColorStop(0, `hsl(${this.hue} 100% ${Math.min(95, lightness + 30)}%)`);
+    baseGrad.addColorStop(0.5, `hsl(${this.hue} 100% ${lightness}%)`);
+    baseGrad.addColorStop(0.85, `hsl(${this.hue} 95% ${Math.max(15, lightness - 20)}%)`);
+    baseGrad.addColorStop(1, `hsl(${this.hue} 90% ${Math.max(5, lightness - 35)}%)`);
+
+    ctx.fillStyle = baseGrad;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, radius, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 2. Dynamic Rotating Interior Pattern / Glass Swirl (Reflects rolling angle)
+    transformGuard(ctx, () => {
+      ctx.translate(this.x, this.y);
+      ctx.rotate(this.angle);
+
+      // Inner glass swirl / stripe
+      ctx.beginPath();
+      ctx.arc(0, 0, radius * 0.65, 0.2 * Math.PI, 0.85 * Math.PI);
+      ctx.strokeStyle = `hsla(${this.hue + 20}, 100%, 85%, 0.45)`;
+      ctx.lineWidth = radius * 0.22;
+      ctx.lineCap = 'round';
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.arc(0, 0, radius * 0.45, 1.2 * Math.PI, 1.85 * Math.PI);
+      ctx.strokeStyle = `hsla(${Math.abs(this.hue - 30)}, 100%, 40%, 0.35)`;
+      ctx.lineWidth = radius * 0.18;
+      ctx.lineCap = 'round';
+      ctx.stroke();
+
+      // Core bead
+      ctx.beginPath();
+      ctx.arc(radius * 0.1, -radius * 0.1, radius * 0.2, 0, Math.PI * 2);
+      ctx.fillStyle = `hsla(${this.hue}, 100%, 95%, 0.6)`;
+      ctx.fill();
+    });
+
+    // 3. Top-Left Glass Specular Highlight (Polished Lens Gloss)
+    const highlightGrad = ctx.createRadialGradient(lightX, lightY, 0, lightX, lightY, radius * 0.55);
+    highlightGrad.addColorStop(0, 'rgba(255, 255, 255, 0.85)');
+    highlightGrad.addColorStop(0.4, 'rgba(255, 255, 255, 0.35)');
+    highlightGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+
+    ctx.fillStyle = highlightGrad;
+    ctx.beginPath();
+    ctx.arc(lightX, lightY, radius * 0.55, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 4. Bottom Rim Ambient Reflection (Glass Subsurface Edge Light)
+    const rimGrad = ctx.createRadialGradient(
+      this.x + radius * 0.4,
+      this.y + radius * 0.4,
+      radius * 0.3,
       this.x,
       this.y,
       radius
     );
-    grad.addColorStop(0, `hsl(${this.hue} 100% ${Math.min(100, lightness + 25)}%)`);
-    grad.addColorStop(0.7, `hsl(${this.hue} 100% ${lightness}%)`);
-    grad.addColorStop(1, `hsl(${this.hue} 100% ${Math.max(0, lightness - 20)}%)`);
+    rimGrad.addColorStop(0, `hsla(${this.hue}, 100%, 80%, 0.4)`);
+    rimGrad.addColorStop(0.8, 'rgba(255, 255, 255, 0)');
 
-    ctx.fillStyle = grad;
+    ctx.fillStyle = rimGrad;
     ctx.beginPath();
     ctx.arc(this.x, this.y, radius, 0, Math.PI * 2);
     ctx.fill();
@@ -206,12 +258,13 @@ export class Marble {
 
   private _drawName(ctx: CanvasRenderingContext2D, zoom: number) {
     transformGuard(ctx, () => {
-      ctx.font = `12pt Pretendard, sans-serif`;
-      ctx.strokeStyle = 'black';
-      ctx.lineWidth = 2;
-      ctx.fillStyle = this.color;
-      ctx.shadowBlur = 0;
-      ctx.translate(this.x, this.y + 0.25);
+      ctx.font = `bold 12pt Pretendard, sans-serif`;
+      ctx.strokeStyle = 'rgba(0, 0, 0, 0.85)';
+      ctx.lineWidth = 3;
+      ctx.fillStyle = '#ffffff';
+      ctx.shadowBlur = 4;
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+      ctx.translate(this.x, this.y + 0.28);
       ctx.scale(1 / zoom, 1 / zoom);
       ctx.strokeText(this.name, 0, 0);
       ctx.fillText(this.name, 0, 0);
@@ -227,10 +280,12 @@ export class Marble {
   }
 
   private _renderCoolTime(ctx: CanvasRenderingContext2D, zoom: number) {
+    const radius = this.size / 2 + 2.5 / zoom;
     ctx.strokeStyle = this.theme.coolTimeIndicator;
-    ctx.lineWidth = 1 / zoom;
+    ctx.lineWidth = 1.5 / zoom;
+    ctx.lineCap = 'round';
     ctx.beginPath();
-    ctx.arc(this.x, this.y, this.size / 2 + 2 / zoom, rad(270), rad(270 + (360 * this._coolTime) / this._maxCoolTime));
+    ctx.arc(this.x, this.y, radius, rad(270), rad(270 + (360 * this._coolTime) / this._maxCoolTime));
     ctx.stroke();
   }
 }
