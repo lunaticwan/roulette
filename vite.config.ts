@@ -1,7 +1,7 @@
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
-  base: process.env.ELECTRON_BUILD === 'true' ? './' : '/roulette/',
+  base: '/roulette/',
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
