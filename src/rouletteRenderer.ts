@@ -450,7 +450,7 @@ export class RouletteRenderer {
   }
 
   /** 당첨자가 여러명일 때 화면 중앙에 목록 팝업을 그린다 */
-  private renderWinnerList(winners: Marble[], { theme, winnerRange }: RenderParameters) {
+  private renderWinnerList(winners: Marble[], { winnerRange }: RenderParameters) {
     const ctx = this.ctx;
     const w = this._logicalWidth;
     const h = this._logicalHeight;

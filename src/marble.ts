@@ -7,6 +7,10 @@ import { transformGuard } from './utils/transformGuard';
 import { rad } from './utils/utils';
 import { Vector } from './utils/Vector';
 
+/**
+ * 룰렛 게임 내 구슬(Marble) 클래스.
+ * 물리 엔진 연동, 3D 가상 그래픽 렌더링, 스킬 생명주기 및 가시 효과 관리를 담당함.
+ */
 export class Marble {
   type = 'marble' as const;
   name: string = '';
@@ -72,6 +76,9 @@ export class Marble {
     physics.createMarble(order, 10.25 + (order % 10) * 0.6, maxLine - line + lineDelta);
   }
 
+  /**
+   * 구슬 위치, 멈춤(Stuck) 감지 및 스킬 정보 업데이트.
+   */
   update(deltaTime: number) {
     if (this.isActive && Vector.lenSq(Vector.sub(this.lastPosition, this.position)) < 0.00001) {
       this._stuckTime += deltaTime;
@@ -106,6 +113,9 @@ export class Marble {
     }
   }
 
+  /**
+   * 뷰포트 컬링 및 렌더링 통합 진입점.
+   */
   render(
     ctx: CanvasRenderingContext2D,
     zoom: number,
@@ -122,12 +132,15 @@ export class Marble {
     const viewPortRight = viewPort.x + viewPortHw;
     const viewPortTop = viewPort.y - viewPortHh - this.size / 2;
     const viewPortBottom = viewPort.y + viewPortHh;
+
+    // 컬링: 화면 바깥의 구슬은 렌더링 생략
     if (
       !isMinimap &&
       (this.x < viewPortLeft || this.x > viewPortRight || this.y < viewPortTop || this.y > viewPortBottom)
     ) {
       return;
     }
+
     const transform = ctx.getTransform();
     if (isMinimap) {
       this._renderMinimap(ctx);
@@ -139,24 +152,67 @@ export class Marble {
 
   private _renderMinimap(ctx: CanvasRenderingContext2D) {
     ctx.fillStyle = this.color;
-    this._drawMarbleBody(ctx, true);
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    ctx.fill();
   }
 
-  private _drawMarbleBody(ctx: CanvasRenderingContext2D, isMinimap: boolean) {
-    if (isMinimap) {
-      ctx.beginPath();
-      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-      ctx.fill();
-      return;
+  private _renderNormal(ctx: CanvasRenderingContext2D, zoom: number, outline: boolean, skin?: CanvasImageSource) {
+    const hs = this.size / 2;
+
+    ctx.save();
+    ctx.shadowColor = `hsl(${this.hue} 100% 50%)`;
+    ctx.shadowBlur = 8 / zoom;
+
+    if (skin) {
+      transformGuard(ctx, () => {
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.angle);
+        ctx.drawImage(skin, -hs, -hs, hs * 2, hs * 2);
+      });
+    } else {
+      this._drawMarbleBody(ctx);
+    }
+    ctx.restore();
+
+    ctx.shadowColor = '';
+    ctx.shadowBlur = 0;
+    this._drawName(ctx, zoom);
+
+    if (outline) {
+      this._drawOutline(ctx, 2 / zoom);
     }
 
+    if (options.useSkills) {
+      this._renderCoolTime(ctx, zoom);
+    }
+  }
+
+  /**
+   * 구슬 몸체 렌더링 서브 파이프라인.
+   */
+  private _drawMarbleBody(ctx: CanvasRenderingContext2D) {
     const radius = this.size / 2;
     const lightness = Math.min(85, this.theme.marbleLightness + 25 * Math.min(1, this.impact / 500));
-
-    // 1. Base 3D Sphere Radial Gradient (Depth & Outer Shadow Rim)
     const lightX = this.x - radius * 0.35;
     const lightY = this.y - radius * 0.35;
 
+    this._render3DBaseBody(ctx, radius, lightness, lightX, lightY);
+    this._renderGlassSwirl(ctx, radius);
+    this._renderSpecularHighlight(ctx, radius, lightX, lightY);
+    this._renderRimReflection(ctx, radius);
+  }
+
+  /**
+   * 1. 3D 구체 음영 입체 그라디언트.
+   */
+  private _render3DBaseBody(
+    ctx: CanvasRenderingContext2D,
+    radius: number,
+    lightness: number,
+    lightX: number,
+    lightY: number
+  ) {
     const baseGrad = ctx.createRadialGradient(lightX, lightY, radius * 0.05, this.x, this.y, radius);
     baseGrad.addColorStop(0, `hsl(${this.hue} 100% ${Math.min(95, lightness + 30)}%)`);
     baseGrad.addColorStop(0.5, `hsl(${this.hue} 100% ${lightness}%)`);
@@ -167,13 +223,16 @@ export class Marble {
     ctx.beginPath();
     ctx.arc(this.x, this.y, radius, 0, Math.PI * 2);
     ctx.fill();
+  }
 
-    // 2. Dynamic Rotating Interior Pattern / Glass Swirl (Reflects rolling angle)
+  /**
+   * 2. 회전각 연동 유리 질감 패턴.
+   */
+  private _renderGlassSwirl(ctx: CanvasRenderingContext2D, radius: number) {
     transformGuard(ctx, () => {
       ctx.translate(this.x, this.y);
       ctx.rotate(this.angle);
 
-      // Inner glass swirl / stripe
       ctx.beginPath();
       ctx.arc(0, 0, radius * 0.65, 0.2 * Math.PI, 0.85 * Math.PI);
       ctx.strokeStyle = `hsla(${this.hue + 20}, 100%, 85%, 0.45)`;
@@ -188,14 +247,17 @@ export class Marble {
       ctx.lineCap = 'round';
       ctx.stroke();
 
-      // Core bead
       ctx.beginPath();
       ctx.arc(radius * 0.1, -radius * 0.1, radius * 0.2, 0, Math.PI * 2);
       ctx.fillStyle = `hsla(${this.hue}, 100%, 95%, 0.6)`;
       ctx.fill();
     });
+  }
 
-    // 3. Top-Left Glass Specular Highlight (Polished Lens Gloss)
+  /**
+   * 3. 상단 광택 하이라이트.
+   */
+  private _renderSpecularHighlight(ctx: CanvasRenderingContext2D, radius: number, lightX: number, lightY: number) {
     const highlightGrad = ctx.createRadialGradient(lightX, lightY, 0, lightX, lightY, radius * 0.55);
     highlightGrad.addColorStop(0, 'rgba(255, 255, 255, 0.85)');
     highlightGrad.addColorStop(0.4, 'rgba(255, 255, 255, 0.35)');
@@ -205,8 +267,12 @@ export class Marble {
     ctx.beginPath();
     ctx.arc(lightX, lightY, radius * 0.55, 0, Math.PI * 2);
     ctx.fill();
+  }
 
-    // 4. Bottom Rim Ambient Reflection (Glass Subsurface Edge Light)
+  /**
+   * 4. 하단 외곽 반사광 효과.
+   */
+  private _renderRimReflection(ctx: CanvasRenderingContext2D, radius: number) {
     const rimGrad = ctx.createRadialGradient(
       this.x + radius * 0.4,
       this.y + radius * 0.4,
@@ -222,38 +288,6 @@ export class Marble {
     ctx.beginPath();
     ctx.arc(this.x, this.y, radius, 0, Math.PI * 2);
     ctx.fill();
-  }
-
-  private _renderNormal(ctx: CanvasRenderingContext2D, zoom: number, outline: boolean, skin?: CanvasImageSource) {
-    const hs = this.size / 2;
-
-    ctx.save();
-    // 고성능 기기 환경: 빛나는 부드러운 글로우 shadow 처리
-    ctx.shadowColor = `hsl(${this.hue} 100% 50%)`;
-    ctx.shadowBlur = 8 / zoom;
-
-    if (skin) {
-      transformGuard(ctx, () => {
-        ctx.translate(this.x, this.y);
-        ctx.rotate(this.angle);
-        ctx.drawImage(skin, -hs, -hs, hs * 2, hs * 2);
-      });
-    } else {
-      this._drawMarbleBody(ctx, false);
-    }
-    ctx.restore();
-
-    ctx.shadowColor = '';
-    ctx.shadowBlur = 0;
-    this._drawName(ctx, zoom);
-
-    if (outline) {
-      this._drawOutline(ctx, 2 / zoom);
-    }
-
-    if (options.useSkills) {
-      this._renderCoolTime(ctx, zoom);
-    }
   }
 
   private _drawName(ctx: CanvasRenderingContext2D, zoom: number) {
