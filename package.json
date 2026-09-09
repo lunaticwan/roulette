@@ -3,14 +3,10 @@
   "productName": "iM뱅크 룰렛 추첨기",
   "version": "1.0.0",
   "type": "module",
-  "main": "electron/main.js",
   "license": "MIT",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build && node scripts/build-sw.js",
-    "build:electron-web": "ELECTRON_BUILD=true npm run build",
-    "electron:serve": "ELECTRON_BUILD=true vite",
-    "electron:build": "node scripts/generate-icons.js && npm run build:electron-web && electron-builder --win",
     "preview": "vite preview",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
@@ -20,8 +16,6 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "electron": "^44.3.0",
-    "electron-builder": "^26.15.3",
     "eslint": "^10.9.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.6",
@@ -34,43 +28,5 @@
   },
   "dependencies": {
     "box2d-wasm": "^7.0.0"
-  },
-  "build": {
-    "appId": "com.imbank.roulette",
-    "productName": "iM뱅크 룰렛 추첨기",
-    "directories": {
-      "output": "dist-electron"
-    },
-    "files": [
-      "dist/**/*",
-      "electron/**/*",
-      "build/**/*"
-    ],
-    "win": {
-      "target": [
-        {
-          "target": "nsis",
-          "arch": [
-            "x64"
-          ]
-        },
-        {
-          "target": "portable",
-          "arch": [
-            "x64"
-          ]
-        }
-      ],
-      "icon": "build/icon.ico",
-      "executableName": "iM-Bank-Roulette"
-    },
-    "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
-      "artifactName": "iM-Bank-Roulette-${version}-setup.exe"
-    },
-    "portable": {
-      "artifactName": "iM-Bank-Roulette-${version}-portable.exe"
-    }
   }
 }
