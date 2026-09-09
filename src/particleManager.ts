@@ -15,7 +15,8 @@ export class ParticleManager {
   }
 
   shot(x: number, y: number) {
-    for (let i = 0; i < 200; i++) {
+    // 고성능 환경 대응: 풍부한 폭죽 이펙트를 위해 파티클 생성량 증가 (500개)
+    for (let i = 0; i < 500; i++) {
       this._particles.push(new Particle(x, y));
     }
   }

@@ -146,7 +146,8 @@ export class RouletteRenderer {
       const realSize = entries ? entries[0].contentRect : this._canvas.getBoundingClientRect();
       if (realSize.width <= 0 || realSize.height <= 0) return;
 
-      const dpr = Math.min(window.devicePixelRatio || 1, 3);
+      // 고성능 디바이스 대응: 상한 제한 없이 디바이스의 네이티브 DPR 그대로 수용
+      const dpr = Math.max(1, window.devicePixelRatio || 1);
       this._dpr = dpr;
 
       this._logicalWidth = realSize.width;
@@ -160,6 +161,16 @@ export class RouletteRenderer {
 
       this._canvas.width = physicalWidth;
       this._canvas.height = physicalHeight;
+
+      // 고화질 이미지 스무딩 설정
+      if (this.ctx) {
+        this.ctx.imageSmoothingEnabled = true;
+        this.ctx.imageSmoothingQuality = 'high';
+      }
+      if (this._displayCtx) {
+        this._displayCtx.imageSmoothingEnabled = true;
+        this._displayCtx.imageSmoothingQuality = 'high';
+      }
 
       this.sizeFactor = 1;
     };

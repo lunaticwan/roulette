@@ -143,18 +143,43 @@ export class Marble {
   }
 
   private _drawMarbleBody(ctx: CanvasRenderingContext2D, isMinimap: boolean) {
+    if (isMinimap) {
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+      ctx.fill();
+      return;
+    }
+
+    const radius = this.size / 2;
+    const lightness = this.theme.marbleLightness + 25 * Math.min(1, this.impact / 500);
+
+    // 고성능 그래픽: 방사형 그라데이션을 적용하여 구슬에 3D 입체감 연출
+    const grad = ctx.createRadialGradient(
+      this.x - radius * 0.3,
+      this.y - radius * 0.3,
+      radius * 0.1,
+      this.x,
+      this.y,
+      radius
+    );
+    grad.addColorStop(0, `hsl(${this.hue} 100% ${Math.min(100, lightness + 25)}%)`);
+    grad.addColorStop(0.7, `hsl(${this.hue} 100% ${lightness}%)`);
+    grad.addColorStop(1, `hsl(${this.hue} 100% ${Math.max(0, lightness - 20)}%)`);
+
+    ctx.fillStyle = grad;
     ctx.beginPath();
-    ctx.arc(this.x, this.y, isMinimap ? this.size : this.size / 2, 0, Math.PI * 2);
+    ctx.arc(this.x, this.y, radius, 0, Math.PI * 2);
     ctx.fill();
   }
 
   private _renderNormal(ctx: CanvasRenderingContext2D, zoom: number, outline: boolean, skin?: CanvasImageSource) {
     const hs = this.size / 2;
 
-    ctx.fillStyle = `hsl(${this.hue} 100% ${this.theme.marbleLightness + 25 * Math.min(1, this.impact / 500)}%`;
+    ctx.save();
+    // 고성능 기기 환경: 빛나는 부드러운 글로우 shadow 처리
+    ctx.shadowColor = `hsl(${this.hue} 100% 50%)`;
+    ctx.shadowBlur = 8 / zoom;
 
-    // ctx.shadowColor = this.color;
-    // ctx.shadowBlur = zoom / 2;
     if (skin) {
       transformGuard(ctx, () => {
         ctx.translate(this.x, this.y);
@@ -164,6 +189,7 @@ export class Marble {
     } else {
       this._drawMarbleBody(ctx, false);
     }
+    ctx.restore();
 
     ctx.shadowColor = '';
     ctx.shadowBlur = 0;

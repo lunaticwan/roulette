@@ -11,6 +11,17 @@ class TestRouletteRenderer extends RouletteRenderer {
 describe('RouletteRenderer High-DPI Scaling Tests', () => {
   beforeEach(() => {
     document.body.innerHTML = '';
+    vi.spyOn(HTMLCanvasElement.prototype, 'getBoundingClientRect').mockReturnValue({
+      width: 1000,
+      height: 600,
+      top: 0,
+      left: 0,
+      bottom: 600,
+      right: 1000,
+      x: 0,
+      y: 0,
+      toJSON: () => {},
+    });
   });
 
   it('should initialize canvas elements and handle devicePixelRatio scaling', async () => {
@@ -21,26 +32,6 @@ describe('RouletteRenderer High-DPI Scaling Tests', () => {
     });
 
     const renderer = new TestRouletteRenderer();
-    // Pre-mock element before init creates canvas
-    const origCreate = document.createElement.bind(document);
-    vi.spyOn(document, 'createElement').mockImplementation((tagName: string, options?: ElementCreationOptions) => {
-      const el = origCreate(tagName, options);
-      if (tagName === 'canvas') {
-        vi.spyOn(el, 'getBoundingClientRect').mockReturnValue({
-          width: 1000,
-          height: 600,
-          top: 0,
-          left: 0,
-          bottom: 600,
-          right: 1000,
-          x: 0,
-          y: 0,
-          toJSON: () => {},
-        });
-      }
-      return el;
-    });
-
     await renderer.init();
 
     expect(renderer.dpr).toBe(2);
@@ -50,11 +41,9 @@ describe('RouletteRenderer High-DPI Scaling Tests', () => {
     expect(renderer.canvas.height).toBe(600 * 2);
     expect(renderer.width).toBe(1000);
     expect(renderer.height).toBe(600);
-
-    vi.restoreAllMocks();
   });
 
-  it('should cap devicePixelRatio at 3 for extreme pixel densities', async () => {
+  it('should support high devicePixelRatio without artificial capping', async () => {
     Object.defineProperty(window, 'devicePixelRatio', {
       value: 4,
       configurable: true,
@@ -62,31 +51,10 @@ describe('RouletteRenderer High-DPI Scaling Tests', () => {
     });
 
     const renderer = new TestRouletteRenderer();
-    const origCreate = document.createElement.bind(document);
-    vi.spyOn(document, 'createElement').mockImplementation((tagName: string, options?: ElementCreationOptions) => {
-      const el = origCreate(tagName, options);
-      if (tagName === 'canvas') {
-        vi.spyOn(el, 'getBoundingClientRect').mockReturnValue({
-          width: 800,
-          height: 600,
-          top: 0,
-          left: 0,
-          bottom: 600,
-          right: 800,
-          x: 0,
-          y: 0,
-          toJSON: () => {},
-        });
-      }
-      return el;
-    });
-
     await renderer.init();
 
-    expect(renderer.dpr).toBe(3);
-    expect(renderer.canvas.width).toBe(800 * 3);
-    expect(renderer.canvas.height).toBe(600 * 3);
-
-    vi.restoreAllMocks();
+    expect(renderer.dpr).toBe(4);
+    expect(renderer.canvas.width).toBe(1000 * 4);
+    expect(renderer.canvas.height).toBe(600 * 4);
   });
 });

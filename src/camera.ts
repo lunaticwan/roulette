@@ -82,12 +82,12 @@ export class Camera {
       this._calcTargetPositionAndZoom(marbles, stage, needToZoom, targetIndex);
     }
 
-    // interpolate position
-    this._position.x = this._interpolation(this.x, this._targetPosition.x, 120);
-    this._position.y = this._interpolation(this.y, this._targetPosition.y);
+    // 고성능 디바이스 환경: 부드러운 카메라 추적을 유도하도록 보간 계수 최적화
+    this._position.x = this._interpolation(this.x, this._targetPosition.x, 60);
+    this._position.y = this._interpolation(this.y, this._targetPosition.y, 8);
 
     // interpolate zoom
-    this._zoom = this._interpolation(this._zoom, this._targetZoom);
+    this._zoom = this._interpolation(this._zoom, this._targetZoom, 8);
   }
 
   private _calcTargetPositionAndZoom(marbles: Marble[], stage: StageDef, needToZoom: boolean, targetIndex: number) {
