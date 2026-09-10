@@ -170,6 +170,7 @@ export class Marble {
         ctx.rotate(this.angle);
         ctx.drawImage(skin, -hs, -hs, hs * 2, hs * 2);
       });
+      this._drawGlassOverlay(ctx);
     } else {
       this._drawMarbleBody(ctx);
     }
@@ -204,7 +205,19 @@ export class Marble {
   }
 
   /**
-   * 1. 3D 구체 음영 입체 그라디언트.
+   * 커스텀 스킨 상단 3D 유리 구체 오버레이 렌더링.
+   */
+  private _drawGlassOverlay(ctx: CanvasRenderingContext2D) {
+    const radius = this.size / 2;
+    const lightX = this.x - radius * 0.35;
+    const lightY = this.y - radius * 0.35;
+
+    this._renderSpecularHighlight(ctx, radius, lightX, lightY);
+    this._renderRimReflection(ctx, radius);
+  }
+
+  /**
+   * 1. 3D 구체 음영 입체 그라디언트 및 하부 산란광 렌더링.
    */
   private _render3DBaseBody(
     ctx: CanvasRenderingContext2D,
@@ -214,10 +227,11 @@ export class Marble {
     lightY: number
   ) {
     const baseGrad = ctx.createRadialGradient(lightX, lightY, radius * 0.05, this.x, this.y, radius);
-    baseGrad.addColorStop(0, `hsl(${this.hue} 100% ${Math.min(95, lightness + 30)}%)`);
-    baseGrad.addColorStop(0.5, `hsl(${this.hue} 100% ${lightness}%)`);
-    baseGrad.addColorStop(0.85, `hsl(${this.hue} 95% ${Math.max(15, lightness - 20)}%)`);
-    baseGrad.addColorStop(1, `hsl(${this.hue} 90% ${Math.max(5, lightness - 35)}%)`);
+    baseGrad.addColorStop(0, `hsl(${this.hue} 100% ${Math.min(98, lightness + 38)}%)`);
+    baseGrad.addColorStop(0.2, `hsl(${this.hue} 100% ${lightness}%)`);
+    baseGrad.addColorStop(0.65, `hsl(${this.hue} 95% ${Math.max(18, lightness - 18)}%)`);
+    baseGrad.addColorStop(0.88, `hsl(${this.hue} 90% ${Math.max(5, lightness - 35)}%)`);
+    baseGrad.addColorStop(1, `hsla(${this.hue}, 100%, ${Math.max(10, lightness - 10)}%, 0.85)`);
 
     ctx.fillStyle = baseGrad;
     ctx.beginPath();
@@ -226,63 +240,82 @@ export class Marble {
   }
 
   /**
-   * 2. 회전각 연동 유리 질감 패턴.
+   * 2. 회전각 연동 다층 유리 소용돌이 및 입체 핵(Nucleus) 패턴.
    */
   private _renderGlassSwirl(ctx: CanvasRenderingContext2D, radius: number) {
     transformGuard(ctx, () => {
       ctx.translate(this.x, this.y);
       ctx.rotate(this.angle);
 
+      // 내부 입체 코어 핵
       ctx.beginPath();
-      ctx.arc(0, 0, radius * 0.65, 0.2 * Math.PI, 0.85 * Math.PI);
-      ctx.strokeStyle = `hsla(${this.hue + 20}, 100%, 85%, 0.45)`;
-      ctx.lineWidth = radius * 0.22;
+      ctx.arc(radius * 0.05, -radius * 0.05, radius * 0.22, 0, Math.PI * 2);
+      ctx.fillStyle = `hsla(${this.hue}, 100%, 95%, 0.65)`;
+      ctx.fill();
+
+      // 주 고굴절 소용돌이 띠
+      ctx.beginPath();
+      ctx.arc(0, 0, radius * 0.62, 0.15 * Math.PI, 0.9 * Math.PI);
+      ctx.strokeStyle = `hsla(${this.hue + 25}, 100%, 88%, 0.55)`;
+      ctx.lineWidth = radius * 0.25;
       ctx.lineCap = 'round';
       ctx.stroke();
 
+      // 보조 대비 음영 띠
       ctx.beginPath();
-      ctx.arc(0, 0, radius * 0.45, 1.2 * Math.PI, 1.85 * Math.PI);
-      ctx.strokeStyle = `hsla(${Math.abs(this.hue - 30)}, 100%, 40%, 0.35)`;
+      ctx.arc(0, 0, radius * 0.42, 1.15 * Math.PI, 1.88 * Math.PI);
+      ctx.strokeStyle = `hsla(${Math.abs(this.hue - 35)}, 100%, 35%, 0.45)`;
       ctx.lineWidth = radius * 0.18;
       ctx.lineCap = 'round';
       ctx.stroke();
 
+      // 외곽 미세 굴절 반사선
       ctx.beginPath();
-      ctx.arc(radius * 0.1, -radius * 0.1, radius * 0.2, 0, Math.PI * 2);
-      ctx.fillStyle = `hsla(${this.hue}, 100%, 95%, 0.6)`;
-      ctx.fill();
+      ctx.arc(0, 0, radius * 0.75, 1.4 * Math.PI, 1.7 * Math.PI);
+      ctx.strokeStyle = `hsla(${this.hue}, 100%, 98%, 0.3)`;
+      ctx.lineWidth = radius * 0.12;
+      ctx.lineCap = 'round';
+      ctx.stroke();
     });
   }
 
   /**
-   * 3. 상단 광택 하이라이트.
+   * 3. 주 광택 곡면 하이라이트 및 대각선 대향 보조 핀포인트 스페큘러.
    */
   private _renderSpecularHighlight(ctx: CanvasRenderingContext2D, radius: number, lightX: number, lightY: number) {
-    const highlightGrad = ctx.createRadialGradient(lightX, lightY, 0, lightX, lightY, radius * 0.55);
-    highlightGrad.addColorStop(0, 'rgba(255, 255, 255, 0.85)');
-    highlightGrad.addColorStop(0.4, 'rgba(255, 255, 255, 0.35)');
-    highlightGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    // 주 타원형 곡면 광택
+    const primaryGrad = ctx.createRadialGradient(lightX, lightY, 0, lightX, lightY, radius * 0.52);
+    primaryGrad.addColorStop(0, 'rgba(255, 255, 255, 0.92)');
+    primaryGrad.addColorStop(0.35, 'rgba(255, 255, 255, 0.45)');
+    primaryGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
 
-    ctx.fillStyle = highlightGrad;
+    ctx.fillStyle = primaryGrad;
     ctx.beginPath();
-    ctx.arc(lightX, lightY, radius * 0.55, 0, Math.PI * 2);
+    ctx.arc(lightX, lightY, radius * 0.52, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 대각선 반대편 보조 핀포인트 반사
+    const subX = this.x + radius * 0.32;
+    const subY = this.y + radius * 0.32;
+    const secondaryGrad = ctx.createRadialGradient(subX, subY, 0, subX, subY, radius * 0.22);
+    secondaryGrad.addColorStop(0, 'rgba(255, 255, 255, 0.65)');
+    secondaryGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+
+    ctx.fillStyle = secondaryGrad;
+    ctx.beginPath();
+    ctx.arc(subX, subY, radius * 0.22, 0, Math.PI * 2);
     ctx.fill();
   }
 
   /**
-   * 4. 하단 외곽 반사광 효과.
+   * 4. 프레넬 외곽 반사광(Fresnel Rim Light) 및 하단 반사림 효과.
    */
   private _renderRimReflection(ctx: CanvasRenderingContext2D, radius: number) {
-    const rimGrad = ctx.createRadialGradient(
-      this.x + radius * 0.4,
-      this.y + radius * 0.4,
-      radius * 0.3,
-      this.x,
-      this.y,
-      radius
-    );
-    rimGrad.addColorStop(0, `hsla(${this.hue}, 100%, 80%, 0.4)`);
-    rimGrad.addColorStop(0.8, 'rgba(255, 255, 255, 0)');
+    // 프레넬 엣지 링 반사광
+    const rimGrad = ctx.createRadialGradient(this.x, this.y, radius * 0.8, this.x, this.y, radius);
+    rimGrad.addColorStop(0, 'rgba(255, 255, 255, 0)');
+    rimGrad.addColorStop(0.7, `hsla(${this.hue}, 100%, 85%, 0.25)`);
+    rimGrad.addColorStop(1, 'rgba(255, 255, 255, 0.6)');
 
     ctx.fillStyle = rimGrad;
     ctx.beginPath();
