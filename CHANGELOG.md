@@ -1,39 +1,43 @@
-# Changelog
+# 변경 이력 (Changelog)
 
+- 2026-09-11:
+  - 프로젝트 문서 체계 개편 (`README.md` 현행화, 에이전트 지침서 `AGENTS.md` 추가).
+  - LLM 및 Jules 파악용 아키텍처 및 모듈 데이터 흐름 가이드 작성.
+- 2026-09-10:
+  - AI 생산성 향상 헬퍼 라이브러리 도입 (`zod`, `es-toolkit`, `ts-pattern`).
+  - 옵션 검증 스키마 구축 및 리팩토링 진행.
 - 2025-11-13:
-  - Optimized the rendering process.
+  - 렌더링 프로세스 최적화.
 - 2025-11-10:
-  - Now it can be fast forwarded by mouse down or touch down the centural area of the canvas.
+  - 캔버스 중앙 영역 터치/클릭 배속(Fast-Forward) 기능 추가.
 - 2025-11-01:
-  - Support PWA
+  - PWA 지원 및 서비스 워커 관리 추가.
 - 2024-05-22:
-  - Replace the physics engine to [box2d-wasm](https://github.com/Birch-san/box2d-wasm) for improving the performance.
+  - 물리 엔진을 [box2d-wasm](https://github.com/Birch-san/box2d-wasm)으로 교체하여 성능 향상.
 - 2024-02-19:
-  - Improved the UI design
+  - UI 디자인 개선.
 - 2024-02-16:
-  - Add a feature for recording video
+  - 녹화 기능 추가.
 - 2024-02-14:
-  - Add a map selector.
+  - 맵 선택기 기능 추가.
 - 2024-01-18:
-  - A new map has added.
+  - 신규 스테이지 맵 추가.
 - 2023-11-24:
-  - Force move the marble randomly if it stays still over 1 second.
+  - 구슬 정체 시 1초 후 랜덤 힘 자동 부여 기능 추가.
 - 2023-10-08:
-  - Save names in the local storage automatically.
+  - 참가자 이름 로컬 스토리지 자동 저장 기능 추가.
 - 2023-09-23:
-  - You can move the viewport by dragging your cursor on the minimap.
+  - 미니맵 커서 드래그 뷰포트 이동 기능 추가.
 - 2023-09-22:
-  - Add a button that sets the last one to the winner.
+  - 최후 생존 구슬 당첨 처리 옵션 추가.
 - 2023-08-02:
-  - Now the names will not cover the whole screen if there are many. You can scroll the names with your mouse wheel.
+  - 대규모 이름 목록 스크롤 UI 개선.
 - 2023-07-29:
-  - Adjusted the map to prevent a marble stays too long in a specific place.
+  - 구슬 맵 정체 방지 지형 조정.
 - 2023-07-21:
-  - Improve the performance when there are too many marbles in the game.
-- 2023-07-21:
-  - Fix the issue the slow-motion seems flickering
-  - End the game immediately if only one marble survives and the winning rank is the last.
+  - 구슬 다수 참가 시 시뮬레이션 성능 개선.
+  - 플리커링 현상 해결 및 생존 조건 단축 처리.
 - 2023-07-16:
-  - Now you can adjust the game speed.
+  - 게임 속도 조절 기능 추가.
 - 2023-05-29:
-  - Now you can shake the game if the marbles are being stuck for more than 3 seconds.
+  - 3초 이상 정체 시 게임판 전체 흔들기 기능 추가.
