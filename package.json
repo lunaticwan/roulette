@@ -32,6 +32,9 @@
   "dependencies": {
     "box2d-wasm": "^7.0.0",
     "canvas-confetti": "^1.9.4",
-    "howler": "^2.2.4"
+    "es-toolkit": "^1.52.0",
+    "howler": "^2.2.4",
+    "ts-pattern": "^5.9.0",
+    "zod": "^4.6.1"
   }
 }

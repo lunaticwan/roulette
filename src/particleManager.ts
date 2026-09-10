@@ -57,7 +57,8 @@ export class ParticleManager {
    * 지정 좌표에서 파티클 폭죽 효과 생성.
    */
   shot(x: number, y: number, count: number = 350) {
-    for (let i = 0; i < count; i++) {
+    const validCount = Math.max(0, Math.floor(count));
+    for (let i = 0; i < validCount; i++) {
       const particle = this._acquireParticle(x, y);
       this._activeParticles.push(particle);
     }
