@@ -14,6 +14,7 @@ import { getText } from './localization';
 import type { VectorLike } from './types/VectorLike';
 import type { UIObject } from './UIObject';
 
+/** 렌더링 파라미터 번들 타입 */
 export type RenderParameters = {
   camera: Camera;
   stage: StageDef;
@@ -37,10 +38,12 @@ const PROGRESS_MAX_WIDTH_RATIO = 0.3;
 const PROGRESS_ACCENT = 'rgba(255, 215, 0, 0.8)';
 const CLOSE_HIT_PADDING = 8;
 
+/** 팝업 닫기 버튼 크기 계산 */
 function closeButtonSize(h: number): number {
   return Math.max(20, Math.min(34, h * 0.045));
 }
 
+/** 팝업 닫기 X 버튼 그리기 및 클릭 영역 반환 */
 function drawCloseCircle(
   ctx: CanvasRenderingContext2D,
   cx: number,
@@ -74,10 +77,15 @@ function drawCloseCircle(
   };
 }
 
+/** 좌표의 직사각형 내부 포함 여부 확인 */
 function inRect(rect: Rect | undefined, x: number, y: number): boolean {
   return !!rect && x >= rect.x && x <= rect.x + rect.w && y >= rect.y && y <= rect.y + rect.h;
 }
 
+/**
+ * 게임 화면 메인 Canvas 렌더러
+ * High-DPI 처리, 물리 엔티티/구슬/이펙트/UI/당첨자 팝업 렌더링 통괄
+ */
 export class RouletteRenderer {
   protected _canvas!: HTMLCanvasElement;
   protected _sceneCanvas!: HTMLCanvasElement;
@@ -99,30 +107,39 @@ export class RouletteRenderer {
     this._keywordService = this.createKeywordService();
   }
 
+  /** 키워드 서비스 생성 팩토리 메서드 */
   protected createKeywordService(): KeywordService {
     return new KeywordService();
   }
 
+  /** 논리적 캔버스 너비 반환 */
   get width() {
     return this._logicalWidth;
   }
 
+  /** 논리적 캔버스 높이 반환 */
   get height() {
     return this._logicalHeight;
   }
 
+  /** 현재 디바이스 픽셀 비율 반환 */
   get dpr() {
     return this._dpr;
   }
 
+  /** 메인 HTML 캔버스 엘리먼트 반환 */
   get canvas() {
     return this._canvas;
   }
 
+  /** 색상 테마 설정 */
   set theme(value: ColorTheme) {
     this._theme = value;
   }
 
+  /**
+   * 이미지 자원 및 키워드 서비스 비동기 로드, DPI 반응형 캔버스 생성 및 이벤트 바인딩
+   */
   async init() {
     await Promise.all([this._load(), this._keywordService.init()]);
 
@@ -146,7 +163,6 @@ export class RouletteRenderer {
       const realSize = entries ? entries[0].contentRect : this._canvas.getBoundingClientRect();
       if (realSize.width <= 0 || realSize.height <= 0) return;
 
-      // 고성능 디바이스 대응: 상한 제한 없이 디바이스의 네이티브 DPR 그대로 수용
       const dpr = Math.max(1, window.devicePixelRatio || 1);
       this._dpr = dpr;
 
@@ -162,7 +178,6 @@ export class RouletteRenderer {
       this._canvas.width = physicalWidth;
       this._canvas.height = physicalHeight;
 
-      // 고화질 이미지 스무딩 설정
       if (this.ctx) {
         this.ctx.imageSmoothingEnabled = true;
         this.ctx.imageSmoothingQuality = 'high';
@@ -181,6 +196,7 @@ export class RouletteRenderer {
     resizing();
   }
 
+  /** 단일 이미지 자원 비동기 로드 */
   private async _loadImage(url: string): Promise<HTMLImageElement> {
     return new Promise((rs) => {
       const img = new Image();
@@ -191,6 +207,7 @@ export class RouletteRenderer {
     });
   }
 
+  /** 내장 에셋 이미지 로드 */
   protected async _load(): Promise<void> {
     const loadPromises = [
       { name: '챔루', imgUrl: new URL('../assets/images/chamru.png', import.meta.url) },
@@ -215,18 +232,22 @@ export class RouletteRenderer {
     await Promise.all(loadPromises);
   }
 
+  /** 구슬 이름 매칭 이미지 자원 조회 */
   private getMarbleImage(name: string): CanvasImageSource | undefined {
-    // Priority 1: Hardcoded images
     if (this._images[name]) {
       return this._images[name];
     }
-    // Priority 2: Keyword sprites from API
     return this._keywordService.getSprite(name);
   }
 
   protected onBeforeEntities(): void {}
   protected onAfterScene(): void {}
 
+  /**
+   * 메인 프레임 종합 렌더링
+   * @param renderParameters 렌더링 상태 데이터
+   * @param uiObjects UI 컴포넌트 목록
+   */
   render(renderParameters: RenderParameters, uiObjects: UIObject[]) {
     this._theme = renderParameters.theme;
 
@@ -265,6 +286,7 @@ export class RouletteRenderer {
     this._displayCtx.drawImage(this._sceneCanvas, 0, 0, this._canvas.width, this._canvas.height);
   }
 
+  /** 스테이지 배경 엔티티(장애물, 폴리라인, 회전체) 렌더링 */
   private renderEntities(entities: MapEntityState[]) {
     this.ctx.save();
     entities.forEach((entity) => {
@@ -308,10 +330,12 @@ export class RouletteRenderer {
     this.ctx.restore();
   }
 
+  /** 스킬 발생 및 물리 충격 이펙트 렌더링 */
   private renderEffects({ effects, camera }: RenderParameters) {
     effects.forEach((effect) => effect.render(this.ctx, camera.zoom * initialZoom, this._theme));
   }
 
+  /** 전체 구슬 객체 렌더링 */
   private renderMarbles({ marbles, camera, winnerRange, winners, size }: RenderParameters) {
     const firstIndex = winnerRange.start - winners.length;
     const lastIndex = winnerRange.end - winners.length;
@@ -330,16 +354,15 @@ export class RouletteRenderer {
     });
   }
 
+  /** 경기 결과(단일/다중 당첨자) 렌더링 결정 */
   private renderResult(params: RenderParameters) {
     const result = params.result;
-    // 새 결과가 나오면(또는 리셋되면) 닫힘 상태를 푼다. _result는 확정될 때마다 새 배열이다
     if (result !== this._lastResult) {
       this._lastResult = result;
       this._resultPopupClosed = false;
     }
     this._resultCloseRect = null;
     if (!result) return;
-    // 1명이면 기존 하단 Winner 표시, 여러명이면 화면 중앙 당첨자 목록 팝업
     if (result.length === 1) {
       this.renderWinner(result[0], params.theme);
     } else if (!this._resultPopupClosed) {
@@ -347,23 +370,20 @@ export class RouletteRenderer {
     }
   }
 
-  /** 결과 팝업 닫기 버튼을 눌렀는지 */
+  /** 결과 팝업 닫기 버튼 충돌 위치 판단 */
   getResultCloseHitAt(x: number, y: number): boolean {
     return inRect(this._resultCloseRect ?? undefined, x, y);
   }
 
+  /** 결과 팝업 수동 닫기 */
   closeResultPopup(): void {
     this._resultPopupClosed = true;
   }
 
-  /**
-   * 여러명 모드에서 확정된 당첨자를 좌측 상단에 상시 표시한다.
-   * 우측은 랭킹 리스트가 구슬 수만큼 내려오므로 겹친다. 좌측은 미니맵이 세로로 긴
-   * 스트립이라 그 오른쪽에 붙인다.
-   */
+  /** 화면 좌측 상단 실시간 당첨자 현황 프로그레스 패널 렌더링 */
   private renderWinnerProgress({ winners, winnerRange, result, theme }: RenderParameters) {
     const { start, end } = winnerRange;
-    if (end <= start) return; // 1명 추첨은 기존 하단 Winner 표시를 쓴다
+    if (end <= start) return;
 
     const ctx = this.ctx;
     const w = this._logicalWidth;
@@ -376,12 +396,10 @@ export class RouletteRenderer {
     const rankFont = `${lineHeight * 0.6}px Pretendard, sans-serif`;
     const nameFont = `bold ${lineHeight * 0.72}px Pretendard, sans-serif`;
 
-    // 확정 전에는 골인한 당첨자만, 확정 후에는 최종 명단(조기 확정분 포함)을 쓴다
     const confirmed = result ?? winners.slice(start, end + 1);
     const winnersTitle = getText('Winners');
     const header = `${winnersTitle} ${confirmed.length} / ${end - start + 1}`;
 
-    // 화면을 넘기면 오래된 쪽을 접는다. 전체 명단은 어차피 중앙 팝업에서 보여준다
     const maxRows = Math.max(1, Math.floor((h * 0.55) / lineHeight) - 2);
     const hidden = Math.max(0, confirmed.length - maxRows);
     const shown = confirmed.slice(hidden);
@@ -402,12 +420,10 @@ export class RouletteRenderer {
 
     const panelW = Math.min(contentW + pad * 2, w * PROGRESS_MAX_WIDTH_RATIO);
     const rows = shown.length + (hidden > 0 ? 1 : 0);
-    // 헤더와 목록 사이 간격은 목록이 있을 때만 준다. 항상 주면 당첨자가 없을 때
-    // 아래쪽에만 빈 공간이 남아 위아래 여백이 어긋난다
     const headerGap = rows > 0 ? lineHeight * 0.35 : 0;
     const panelH = pad * 2 + lineHeight + headerGap + rows * lineHeight;
     const panelX = MINIMAP_INSET + MINIMAP_WIDTH + pad;
-    const panelY = MINIMAP_INSET; // 미니맵 상단과 맞춘다
+    const panelY = MINIMAP_INSET;
 
     ctx.fillStyle = theme.winnerBackground;
     ctx.fillRect(panelX, panelY, panelW, panelH);
@@ -449,7 +465,7 @@ export class RouletteRenderer {
     ctx.restore();
   }
 
-  /** 당첨자가 여러명일 때 화면 중앙에 목록 팝업을 그린다 */
+  /** 다중 당첨자 결과 화면 중앙 모달 팝업 렌더링 */
   private renderWinnerList(winners: Marble[], { winnerRange }: RenderParameters) {
     const ctx = this.ctx;
     const w = this._logicalWidth;
@@ -459,7 +475,6 @@ export class RouletteRenderer {
     const padding = lineHeight;
     const titleHeight = lineHeight * 2;
 
-    // 세로로 다 안 들어가면 열을 늘린다
     const maxRows = Math.max(
       1,
       Math.floor((h * RESULT_PANEL_MAX_HEIGHT_RATIO - titleHeight - padding * 2) / lineHeight)
@@ -475,11 +490,9 @@ export class RouletteRenderer {
 
     ctx.save();
 
-    // 배경 어둡게 오버레이
     ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
     ctx.fillRect(0, 0, w, h);
 
-    // 팝업 패널 - 황금빛 글로우 테두리와 어두운 프리미엄 카드 배경
     const panelBg = ctx.createLinearGradient(panelX, panelY, panelX, panelY + panelH);
     panelBg.addColorStop(0, '#1a1a24');
     panelBg.addColorStop(1, '#0d0d12');
@@ -502,7 +515,6 @@ export class RouletteRenderer {
     ctx.textBaseline = 'middle';
     ctx.textAlign = 'center';
 
-    // 타이틀 텍스트 연출
     ctx.save();
     ctx.shadowBlur = 10;
     ctx.shadowColor = 'rgba(255, 215, 0, 0.6)';
@@ -512,7 +524,6 @@ export class RouletteRenderer {
     ctx.fillText(`🏆 ${winnersTitle} (${winners.length}) 🏆`, w / 2, panelY + titleHeight / 2);
     ctx.restore();
 
-    // 버튼 중심을 팝업 우상단 꼭지점에 맞춰 걸쳐놓는다
     this._resultCloseRect = drawCloseCircle(ctx, panelX + panelW, panelY, closeButtonSize(h), '#222');
 
     const rankWidth = lineHeight * 1.8;
@@ -544,6 +555,7 @@ export class RouletteRenderer {
     ctx.restore();
   }
 
+  /** 단일 당첨자 최하단 배너 렌더링 */
   private renderWinner(winner: Marble, theme: ColorTheme) {
     const sceneW = this._logicalWidth;
     const sceneH = this._logicalHeight;
@@ -554,7 +566,6 @@ export class RouletteRenderer {
 
     this.ctx.save();
 
-    // 배너 테두리 및 황금빛 모서리/그라데이션 배경 연출
     const bgGradient = this.ctx.createLinearGradient(bannerX, sceneH - winnerAreaHeight, bannerX + bannerWidth, sceneH);
     bgGradient.addColorStop(0, 'rgba(20, 20, 30, 0.85)');
     bgGradient.addColorStop(0.5, 'rgba(35, 30, 10, 0.9)');
@@ -563,7 +574,6 @@ export class RouletteRenderer {
     this.ctx.fillStyle = bgGradient;
     this.ctx.fillRect(bannerX, sceneH - winnerAreaHeight, bannerWidth, winnerAreaHeight);
 
-    // 상단 황금빛 루프 테두리 Line
     const goldGradient = this.ctx.createLinearGradient(bannerX, 0, bannerX + bannerWidth, 0);
     goldGradient.addColorStop(0, '#ffd700');
     goldGradient.addColorStop(0.5, '#fff8dc');
@@ -578,7 +588,6 @@ export class RouletteRenderer {
     const marbleCenterY = sceneH - winnerAreaHeight / 2;
     const marbleImage = this.getMarbleImage(winner.name);
 
-    // 구슬 뒤 후광 (Glow) 연출
     this.ctx.save();
     this.ctx.shadowBlur = 25;
     this.ctx.shadowColor = `hsl(${winner.hue}, 100%, 65%)`;
@@ -607,7 +616,6 @@ export class RouletteRenderer {
     const titleY = sceneH - Math.round(110 * scale) + WINNER_TEXT_OFFSET;
     const nameY = sceneH - Math.round(50 * scale) + WINNER_TEXT_OFFSET;
 
-    // 타이틀 (WINNER) - 황금빛 글로우
     this.ctx.save();
     this.ctx.font = `bold ${titleFontSize}px Pretendard, sans-serif`;
     this.ctx.textAlign = 'right';
@@ -617,14 +625,12 @@ export class RouletteRenderer {
     this.ctx.fillText(winnerTitle, textRightX, titleY);
     this.ctx.restore();
 
-    // 당첨자 이름 - 네온 화려한 글로우 및 그라데이션
     this.ctx.save();
     this.ctx.font = `bold ${nameFontSize}px Pretendard, sans-serif`;
     this.ctx.textAlign = 'right';
     this.ctx.shadowBlur = 18;
     this.ctx.shadowColor = `hsl(${winner.hue}, 100%, 60%)`;
 
-    // 텍스트 그라데이션
     const nameGradient = this.ctx.createLinearGradient(textRightX - 200, nameY, textRightX, nameY);
     nameGradient.addColorStop(0, '#ffffff');
     nameGradient.addColorStop(1, `hsl(${winner.hue}, 100%, 75%)`);

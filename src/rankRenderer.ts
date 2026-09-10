@@ -6,6 +6,10 @@ import type { Rect } from './types/rect.type';
 import type { MouseEventArgs, UIObject } from './UIObject';
 import { bound } from './utils/bound.decorator';
 
+/**
+ * 실시간 순위 리스트 UI 렌더러
+ * 우측 상단 순위표 표시, 마우스 휠 스크롤 및 더블클릭 클립보드 복사 기능 지원
+ */
 export class RankRenderer implements UIObject {
   private _currentY = 0;
   private _targetY = 0;
@@ -18,6 +22,7 @@ export class RankRenderer implements UIObject {
   private winnerRange: WinnerRange = { start: 0, end: 0 };
   private messageHandler?: (msg: string) => void;
 
+  /** 마우스 휠 조작 시 순위표 위치 스크롤 */
   @bound
   onWheel(e: WheelEvent) {
     this._targetY += e.deltaY;
@@ -27,6 +32,7 @@ export class RankRenderer implements UIObject {
     this._userMoved = 2000;
   }
 
+  /** 더블 클릭 시 현재 순위표 결과 TSV 형식 클립보드 복사 */
   @bound
   onDblClick(e?: MouseEventArgs) {
     if (e) {
@@ -51,14 +57,17 @@ export class RankRenderer implements UIObject {
     }
   }
 
+  /** 해당 순위가 당첨 범위에 속하는지 여부 확인 */
   private isWinningRank(rank: number) {
     return rank >= this.winnerRange.start && rank <= this.winnerRange.end;
   }
 
+  /** 알림 메시지 이벤트 콜백 등록 */
   onMessage(func: (msg: string) => void) {
     this.messageHandler = func;
   }
 
+  /** 순위 목록 및 당첨 밴드 렌더링 */
   render(
     ctx: CanvasRenderingContext2D,
     { winners, marbles, winnerRange, theme }: RenderParameters,
@@ -120,6 +129,7 @@ export class RankRenderer implements UIObject {
     ctx.restore();
   }
 
+  /** 수동 스크롤 미동작 시 선두 구슬 추적 순위 위치 자동 보간 이동 */
   update(deltaTime: number) {
     if (this._currentWinner === -1) {
       return;

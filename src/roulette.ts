@@ -21,13 +21,21 @@ import { bound } from './utils/bound.decorator';
 import { parseName, shuffle } from './utils/utils';
 import { VideoRecorder } from './utils/videoRecorder';
 
-/** 입력 범위를 실제 구슬 수에 맞춰 자른다. 범위를 넘기면 뒤쪽이 잘린다 */
+/**
+ * 입력 범위를 실제 구슬 수에 맞춰 클리핑
+ * @param winnerRange 시작/끝 당첨 범위
+ * @param marbleCount 전체 구슬 수
+ */
 function clipWinnerRange({ start, end }: WinnerRange, marbleCount: number): WinnerRange {
   const last = Math.max(0, marbleCount - 1);
   const clippedStart = Math.min(Math.max(0, start), last);
   return { start: clippedStart, end: Math.min(Math.max(clippedStart, end), last) };
 }
 
+/**
+ * 마블 룰렛 게임 엔진 메인 클래스
+ * 물리 연산, 구슬 상태 관리, 카메라, 렌더링, 사운드, 비디오 녹화 통괄
+ */
 export class Roulette extends EventTarget {
   private _marbles: Marble[] = [];
 
@@ -53,8 +61,7 @@ export class Roulette extends EventTarget {
   /** 진행 중에는 null, 당첨자가 모두 확정되면 당첨자 배열 */
   private _result: Marble[] | null = null;
 
-  // 구슬 id(= order)는 매 라운드 재사용된다. 리셋 시 취소하지 않으면 이 타이머가
-  // 뒤늦게 발화해 같은 id를 가진 새 라운드의 구슬을 지워버린다
+  // 구슬 id(= order)는 매 라운드 재사용. 리셋 시 취소하지 않으면 뒤늦게 타이머 동작하여 새 구슬 지움
   private _pendingRemovals: number[] = [];
 
   private _uiObjects: UIObject[] = [];
@@ -68,22 +75,27 @@ export class Roulette extends EventTarget {
   protected fastForwarder!: FastForwader;
   protected _theme: ColorTheme = Themes.dark;
 
+  /** 엔진 초기화 완료 여부 */
   get isReady() {
     return this._isReady;
   }
 
+  /** 추첨 진행 중 여부 */
   get isRunning() {
     return this._isRunning;
   }
 
+  /** 사운드 매니저 반환 */
   get soundManager() {
     return soundManager;
   }
 
+  /** 렌더러 생성 팩토리 메서드 */
   protected createRenderer(): RouletteRenderer {
     return new RouletteRenderer();
   }
 
+  /** 배속 조작 UI 객체 생성 팩토리 메서드 */
   protected createFastForwader(): FastForwader {
     return new FastForwader();
   }
@@ -99,10 +111,12 @@ export class Roulette extends EventTarget {
     });
   }
 
+  /** 현재 최종 배율 줌 값 반환 */
   public getZoom() {
     return initialZoom * this._camera.zoom;
   }
 
+  /** UI 객체 등록 및 이벤트 리스너 연결 */
   private addUiObject(obj: UIObject) {
     this._uiObjects.push(obj);
     if (obj.onWheel) {
@@ -116,6 +130,7 @@ export class Roulette extends EventTarget {
     }
   }
 
+  /** 프레임 update 루프 연산 */
   @bound
   private _update() {
     if (!this._lastTime) this._lastTime = Date.now();
@@ -155,6 +170,7 @@ export class Roulette extends EventTarget {
     window.requestAnimationFrame(this._update);
   }
 
+  /** 구슬 별 상태, 골인 판단, 스킬발동 갱신 처리 */
   private _updateMarbles(deltaTime: number) {
     if (!this._stage) return;
 
@@ -191,21 +207,21 @@ export class Roulette extends EventTarget {
     this._checkFinish();
   }
 
-  /** 카메라와 슬로우모션이 주목할 구슬 = 당첨 커트라인에 걸쳐있는 구슬 */
+  /** 카메라와 슬로우모션이 주목할 구슬 인덱스 반환 */
   private get _targetIndex() {
     return this._winnerRange.end - this._winners.length;
   }
 
+  /** 특정 순위가 당첨 범위에 속하는지 확인 */
   private _isWinningRank(rank: number) {
     return rank >= this._winnerRange.start && rank <= this._winnerRange.end;
   }
 
+  /** 경기 종료 및 당첨자 확정 조건 확인 */
   private _checkFinish() {
     if (!this._isRunning) return;
     const { start, end } = this._winnerRange;
 
-    // 남은 구슬이 1개면 그 등수는 골인하지 않아도 확정된다. 2개 이상 남았다면 그들 사이의
-    // 순위는 물리로만 정해지므로 예측하지 않는다 (당첨 범위 안에서도 순위는 의미를 가진다)
     const early = this._winners.length > 0 && this._marbles.length === 1;
     const ranked = early ? [...this._winners, this._marbles[0]] : this._winners;
     if (ranked.length <= end) return;
@@ -228,6 +244,7 @@ export class Roulette extends EventTarget {
     }, 1000);
   }
 
+  /** 결승선 접근 시 슬로우모션 타임스케일 계산 */
   private _calcTimeScale(): number {
     if (!this._stage) return 1;
     const targetIndex = this._targetIndex;
@@ -246,11 +263,13 @@ export class Roulette extends EventTarget {
     return 1;
   }
 
+  /** 스킬 이펙트 애니메이션 갱신 */
   private _updateEffects(deltaTime: number) {
     this._effects.forEach((effect) => effect.update(deltaTime));
     this._effects = this._effects.filter((effect) => !effect.isDestroy);
   }
 
+  /** 캔버스 프레임 렌더링 호출 */
   private _render() {
     if (!this._stage) return;
     const renderParams = {
@@ -269,6 +288,7 @@ export class Roulette extends EventTarget {
     this._renderer.render(renderParams, this._uiObjects);
   }
 
+  /** 물리 엔진 및 UI 컴포넌트 비동기 초기화 */
   private async _init() {
     this._recorder = new VideoRecorder(this._renderer.canvas);
 
@@ -293,6 +313,7 @@ export class Roulette extends EventTarget {
     this._loadMap();
   }
 
+  /** 마우스/포인터 이벤트 좌표 변환 및 UI 전달 핸들러 */
   @bound
   private mouseHandler(eventName: MouseEventName, e: MouseEvent) {
     const handlerName = `on${eventName}` as MouseEventHandlerName;
@@ -318,6 +339,7 @@ export class Roulette extends EventTarget {
     });
   }
 
+  /** DOM 캔버스 포인터/클릭 이벤트 바인딩 */
   private attachEvent() {
     const canvas = this._renderer.canvas;
     const onPointerRelease = (e: Event) => {
@@ -352,6 +374,7 @@ export class Roulette extends EventTarget {
     });
   }
 
+  /** 현재 스테이지 물리 환경 로드 */
   private _loadMap() {
     if (!this._stage) {
       throw new Error('No map has been selected');
@@ -361,6 +384,7 @@ export class Roulette extends EventTarget {
     this._camera.initializePosition();
   }
 
+  /** 현재 모든 구슬 및 예약된 제거 타이머 초기화 */
   public clearMarbles() {
     this._pendingRemovals.forEach((id) => window.clearTimeout(id));
     this._pendingRemovals = [];
@@ -370,6 +394,7 @@ export class Roulette extends EventTarget {
     this._marbles = [];
   }
 
+  /** 비디오 자동 녹화 시작 */
   public async startRecording() {
     if (!this._autoRecording) return;
     try {
@@ -379,6 +404,7 @@ export class Roulette extends EventTarget {
     }
   }
 
+  /** 추첨 시뮬레이션 개시 */
   public start() {
     if (this._isRunning) return;
     this._isRunning = true;
@@ -396,6 +422,7 @@ export class Roulette extends EventTarget {
     }
   }
 
+  /** 진행 속도 배율 설정 */
   public setSpeed(value: number) {
     if (value <= 0) {
       throw new Error('Speed multiplier must larger than 0');
@@ -403,37 +430,47 @@ export class Roulette extends EventTarget {
     this._speed = value;
   }
 
+  /** 결과 팝업 닫기 버튼 클릭 영역 충돌 검사 */
   private resultCloseHitAt(e: MouseEvent): boolean {
     const sizeFactor = this._renderer.sizeFactor;
     return this._renderer.getResultCloseHitAt(e.offsetX * sizeFactor, e.offsetY * sizeFactor);
   }
 
+  /** 테마 변경 */
   public setTheme(themeName: keyof typeof Themes) {
     this._theme = Themes[themeName];
   }
 
+  /** 현재 설정된 진행 속도 배율 반환 */
   public getSpeed() {
     return this._speed;
   }
 
+  /** 단일 당첨 순위 지정 */
   public setWinningRank(rank: number) {
     this.setWinnerRange(rank, rank);
   }
 
+  /** 당첨 순위 범위 설정 (0-based) */
   public setWinnerRange(start: number, end: number) {
     options.winnerRange = { start, end };
     this._winnerRange = clipWinnerRange(options.winnerRange, this._marbles.length);
   }
 
-  /** 실제 구슬 수에 맞춰 잘린 범위 (0-based, 양끝 포함) */
+  /** 현재 적용된 당첨 순위 범위 반환 */
   public getWinnerRange(): WinnerRange {
     return { ...this._winnerRange };
   }
 
+  /** 자동 비디오 녹화 여부 설정 */
   public setAutoRecording(value: boolean) {
     this._autoRecording = value;
   }
 
+  /**
+   * 구슬 생성 목록을 파싱하고 맵 상에 구슬 강체배치
+   * @param names 이름/가중치/수량 구문이 포함된 문자열 배열
+   */
   public setMarbles(names: string[]) {
     this.reset();
     const arr = names.slice();
@@ -476,7 +513,6 @@ export class Roulette extends EventTarget {
       }
     });
 
-    // 카메라를 구슬 생성 위치 중앙으로 이동 + 줌인
     if (totalCount > 0) {
       const cols = Math.min(totalCount, 10);
       const rows = Math.ceil(totalCount / 10);
@@ -498,11 +534,13 @@ export class Roulette extends EventTarget {
     }
   }
 
+  /** 물리 엔진 엔티티 및 구슬 전체 제거 */
   private _clearMap() {
     this.physics.clear();
     this._marbles = [];
   }
 
+  /** 경기를 완전히 리셋하고 맵 다시 로드 */
   public reset() {
     this.clearMarbles();
     this._clearMap();
@@ -510,10 +548,12 @@ export class Roulette extends EventTarget {
     this._goalDist = Infinity;
   }
 
+  /** 현재 남아있는 구슬 개수 반환 */
   public getCount() {
     return this._marbles.length;
   }
 
+  /** 스테이지 전체 목록 정보 반환 */
   public getMaps() {
     return stages.map((stage, index) => {
       return {
@@ -523,6 +563,7 @@ export class Roulette extends EventTarget {
     });
   }
 
+  /** 현재 선택된 스테이지 정보 반환 */
   public getCurrentMap() {
     if (!this._stage) return null;
     return {
@@ -531,6 +572,10 @@ export class Roulette extends EventTarget {
     };
   }
 
+  /**
+   * 지정한 인덱스의 스테이지로 변경 및 구슬 재생성
+   * @param index 스테이지 인덱스
+   */
   public setMap(index: number) {
     if (index < 0 || index > stages.length - 1) {
       throw new Error('Incorrect map number');
