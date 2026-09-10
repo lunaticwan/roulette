@@ -2,6 +2,7 @@ export const Translations = {
   en: {
     'Enter names below': 'Enter names below',
     Shuffle: 'Shuffle',
+    Reset: 'Reset',
     Start: 'Start',
     Map: 'Map',
     Recording: 'Recording',
@@ -37,6 +38,7 @@ export const Translations = {
   ko: {
     'Enter names below': '이름 입력',
     Shuffle: '섞기',
+    Reset: '초기화',
     Start: '시작',
     Map: '맵',
     Recording: '녹화',

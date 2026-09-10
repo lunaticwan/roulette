@@ -66,6 +66,10 @@
         localStorage.setItem('mbr_names', names.join(','));
         applyWinnerSetting();
         updateMarbleCounter(names);
+        const btnStart = document.querySelector('#btnStart');
+        if (btnStart) {
+          btnStart.disabled = !ready;
+        }
       }
 
       function updateMarbleCounter(names) {
@@ -207,8 +211,14 @@
           getReady();
         });
 
-        document.querySelector('#btnStart').addEventListener('click', () => {
-          if (!ready) return;
+        document.querySelector('#btnReset').addEventListener('click', () => {
+          getReady();
+        });
+
+        document.querySelector('#btnStart').addEventListener('click', (e) => {
+          if (!ready || (window.roulette && window.roulette.isRunning)) return;
+          const btn = e.currentTarget;
+          if (btn) btn.disabled = true;
           document.querySelector('#settings').classList.add('hide');
           window.roulette.start();
         });
@@ -245,6 +255,7 @@
         window.roulette.addEventListener('goal', () => {
           ready = false;
           setTimeout(() => {
+            getReady();
             document.querySelector('#settings').classList.remove('hide');
           }, 3000);
         });
@@ -381,6 +392,10 @@
           <button id="btnShuffle" title="Shuffle" data-trans="title">
             <i class="icon shuffle"></i>
             <span data-trans>Shuffle</span>
+          </button>
+          <button id="btnReset" title="Reset" data-trans="title">
+            <i class="icon reset"></i>
+            <span data-trans>Reset</span>
           </button>
           <button id="btnStart" title="Start" data-trans="title">
             <i class="icon play"></i>
