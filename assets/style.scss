@@ -105,6 +105,10 @@ div.copyright a {
     mask-image: url('images/shuffle.svg');
   }
 
+  &.reset {
+    mask-image: url('images/reset.svg');
+  }
+
   &.record {
     mask-image: url('images/record.svg');
   }
@@ -223,6 +227,14 @@ div.copyright a {
     &:active {
       transform: scale(0.97);
     }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      pointer-events: none;
+      transform: none !important;
+      box-shadow: none !important;
+    }
   }
 
   div.theme {
@@ -270,6 +282,17 @@ div.copyright a {
       gap: 8px;
 
       #btnShuffle {
+        background: rgba(30, 41, 59, 0.8);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        color: #e2e8f0;
+
+        &:hover {
+          background: rgba(51, 65, 85, 0.9);
+          color: #ffffff;
+        }
+      }
+
+      #btnReset {
         background: rgba(30, 41, 59, 0.8);
         border: 1px solid rgba(255, 255, 255, 0.12);
         color: #e2e8f0;

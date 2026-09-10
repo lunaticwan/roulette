@@ -72,6 +72,10 @@ export class Roulette extends EventTarget {
     return this._isReady;
   }
 
+  get isRunning() {
+    return this._isRunning;
+  }
+
   get soundManager() {
     return soundManager;
   }
@@ -376,6 +380,7 @@ export class Roulette extends EventTarget {
   }
 
   public start() {
+    if (this._isRunning) return;
     this._isRunning = true;
     this._winnerRange = clipWinnerRange(options.winnerRange, this._marbles.length);
     this._camera.startFollowingMarbles();
