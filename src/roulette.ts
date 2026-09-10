@@ -9,9 +9,11 @@ import { Minimap } from './minimap';
 import options, { type WinnerRange } from './options';
 import { ParticleManager } from './particleManager';
 import { Box2dPhysics } from './physics-box2d';
+import { confettiManager } from './confettiManager';
 import { RankRenderer } from './rankRenderer';
 import { RouletteRenderer } from './rouletteRenderer';
 import { SkillEffect } from './skillEffect';
+import { soundManager } from './soundManager';
 import type { ColorTheme } from './types/ColorTheme';
 import type { MouseEventHandlerName, MouseEventName } from './types/mouseEvents.type';
 import type { UIObject } from './UIObject';
@@ -68,6 +70,10 @@ export class Roulette extends EventTarget {
 
   get isReady() {
     return this._isReady;
+  }
+
+  get soundManager() {
+    return soundManager;
   }
 
   protected createRenderer(): RouletteRenderer {
@@ -154,11 +160,14 @@ export class Roulette extends EventTarget {
       if (marble.skill === Skills.Impact) {
         this._effects.push(new SkillEffect(marble.x, marble.y));
         this.physics.impact(marble.id);
+        soundManager.playSkill();
       }
       if (marble.y > this._stage.goalY) {
         this._winners.push(marble);
         if (this._isRunning && this._isWinningRank(this._winners.length - 1)) {
           this._particleManager.shot(this._renderer.width, this._renderer.height);
+          confettiManager.triggerGoalBurst();
+          soundManager.playGoal();
         }
         this._pendingRemovals.push(
           window.setTimeout(() => {
@@ -203,6 +212,8 @@ export class Roulette extends EventTarget {
 
     this._result = ranked.slice(start, end + 1);
     this._isRunning = false;
+    confettiManager.triggerVictoryShower();
+    soundManager.playVictory();
     this.dispatchEvent(
       new CustomEvent('goal', {
         detail: { winner: this._result[0].name, winners: this._result.map((m) => m.name) },
