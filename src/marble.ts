@@ -325,7 +325,7 @@ export class Marble {
 
   private _drawName(ctx: CanvasRenderingContext2D, zoom: number) {
     transformGuard(ctx, () => {
-      ctx.font = `bold 12pt Pretendard, sans-serif`;
+      ctx.font = `bold 16px Pretendard, sans-serif`;
       ctx.strokeStyle = 'rgba(0, 0, 0, 0.85)';
       ctx.lineWidth = 3;
       ctx.fillStyle = '#ffffff';
@@ -341,7 +341,7 @@ export class Marble {
   private _drawOutline(ctx: CanvasRenderingContext2D, lineWidth: number) {
     ctx.beginPath();
     ctx.strokeStyle = this.theme.marbleWinningBorder;
-    ctx.lineWidth = lineWidth;
+    ctx.lineWidth = Math.max(1, Math.round(lineWidth));
     ctx.arc(this.x, this.y, this.size / 2, 0, Math.PI * 2);
     ctx.stroke();
   }

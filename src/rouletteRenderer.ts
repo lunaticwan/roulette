@@ -40,7 +40,7 @@ const CLOSE_HIT_PADDING = 8;
 
 /** 팝업 닫기 버튼 크기 계산 */
 function closeButtonSize(h: number): number {
-  return Math.max(20, Math.min(34, h * 0.045));
+  return Math.max(20, Math.min(34, Math.round(h * 0.045)));
 }
 
 /** 팝업 닫기 X 버튼 그리기 및 클릭 영역 반환 */
@@ -59,7 +59,7 @@ function drawCloseCircle(
   ctx.fillStyle = fill;
   ctx.fill();
   ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
-  ctx.lineWidth = Math.max(1.5, size * 0.07);
+  ctx.lineWidth = Math.max(2, Math.round(size * 0.07));
   ctx.stroke();
   ctx.beginPath();
   ctx.moveTo(cx - arm, cy - arm);
@@ -389,12 +389,12 @@ export class RouletteRenderer {
     const w = this._logicalWidth;
     const h = this._logicalHeight;
 
-    const lineHeight = Math.min(24, Math.max(14, h * 0.042));
+    const lineHeight = Math.round(Math.min(24, Math.max(14, h * 0.042)));
     const pad = lineHeight * 0.6;
     const rankWidth = lineHeight * 1.9;
-    const headerFont = `bold ${lineHeight * 0.7}px Pretendard, sans-serif`;
-    const rankFont = `${lineHeight * 0.6}px Pretendard, sans-serif`;
-    const nameFont = `bold ${lineHeight * 0.72}px Pretendard, sans-serif`;
+    const headerFont = `bold ${Math.round(lineHeight * 0.7)}px Pretendard, sans-serif`;
+    const rankFont = `${Math.round(lineHeight * 0.6)}px Pretendard, sans-serif`;
+    const nameFont = `bold ${Math.round(lineHeight * 0.72)}px Pretendard, sans-serif`;
 
     const confirmed = result ?? winners.slice(start, end + 1);
     const winnersTitle = getText('Winners');
@@ -471,7 +471,7 @@ export class RouletteRenderer {
     const w = this._logicalWidth;
     const h = this._logicalHeight;
 
-    const lineHeight = Math.min(32, Math.max(16, h * 0.05));
+    const lineHeight = Math.round(Math.min(32, Math.max(16, h * 0.05)));
     const padding = lineHeight;
     const titleHeight = lineHeight * 2;
 
@@ -509,7 +509,7 @@ export class RouletteRenderer {
     goldGlow.addColorStop(1, '#cca625');
 
     ctx.strokeStyle = goldGlow;
-    ctx.lineWidth = 2.5;
+    ctx.lineWidth = 3;
     ctx.strokeRect(panelX, panelY, panelW, panelH);
 
     ctx.textBaseline = 'middle';
@@ -519,7 +519,7 @@ export class RouletteRenderer {
     ctx.shadowBlur = 10;
     ctx.shadowColor = 'rgba(255, 215, 0, 0.6)';
     ctx.fillStyle = goldGlow;
-    ctx.font = `bold ${lineHeight * 1.15}px Pretendard, sans-serif`;
+    ctx.font = `bold ${Math.round(lineHeight * 1.15)}px Pretendard, sans-serif`;
     const winnersTitle = getText('Winners');
     ctx.fillText(`🏆 ${winnersTitle} (${winners.length}) 🏆`, w / 2, panelY + titleHeight / 2);
     ctx.restore();
@@ -540,14 +540,14 @@ export class RouletteRenderer {
 
       ctx.textAlign = 'right';
       ctx.fillStyle = '#ffd700';
-      ctx.font = `bold ${lineHeight * 0.65}px Pretendard, sans-serif`;
+      ctx.font = `bold ${Math.round(lineHeight * 0.65)}px Pretendard, sans-serif`;
       ctx.fillText(`#${winnerRange.start + i + 1}`, x + rankWidth * 0.8, y);
 
       ctx.textAlign = 'left';
       ctx.shadowBlur = 8;
       ctx.shadowColor = `hsl(${marble.hue}, 100%, 60%)`;
       ctx.fillStyle = `hsl(${marble.hue} 100% 75%)`;
-      ctx.font = `bold ${lineHeight * 0.75}px Pretendard, sans-serif`;
+      ctx.font = `bold ${Math.round(lineHeight * 0.75)}px Pretendard, sans-serif`;
       ctx.fillText(marble.name, x + rankWidth, y);
       ctx.restore();
     });
