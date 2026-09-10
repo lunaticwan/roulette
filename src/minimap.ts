@@ -9,10 +9,15 @@ import { bound } from './utils/bound.decorator';
 
 const MINIMAP_SCALE = 2.5;
 const MINIMAP_UNITS = 26;
-/** 미니맵은 좌측에 세로로 긴 스트립이다. 다른 HUD가 피해가려면 이 값이 필요하다 */
+/** 미니맵 좌측 패딩 여백 */
 export const MINIMAP_INSET = 10;
+/** 미니맵 폭 크기 */
 export const MINIMAP_WIDTH = MINIMAP_UNITS * MINIMAP_SCALE;
 
+/**
+ * 화면 좌측 맵 전체 상황 축소 미니맵 UI 클래스
+ * 구슬 위치, 스테이지 구조물, 현 시점 카메라 영역 표시 및 드래그 탐색 지원
+ */
 export class Minimap implements UIObject {
   private ctx!: CanvasRenderingContext2D;
   private lastParams: RenderParameters | null = null;
@@ -30,18 +35,21 @@ export class Minimap implements UIObject {
     };
   }
 
+  /** 미니맵 사각형 바운딩 박스 반환 */
   getBoundingBox(): Rect | null {
     return this.boundingBox;
   }
 
+  /** 미니맵 마우스 상호작용에 따른 뷰포트 이동 이벤트 콜백 등록 */
   onViewportChange(callback: (pos?: VectorLike) => void) {
     this._onViewportChangeHandler = callback;
   }
 
   update(): void {
-    // nothing to do
+    // 프레임 갱신 연산 없음
   }
 
+  /** 마우스 포인터 이동에 따른 카메라 시점 드래그 이동 처리 */
   @bound
   onMouseMove(e?: { x: number; y: number }) {
     if (!e) {
@@ -64,6 +72,7 @@ export class Minimap implements UIObject {
     }
   }
 
+  /** 미니맵 전체 배경, 장애물, 구슬, 뷰포트 영속 프레임 렌더링 */
   render(ctx: CanvasRenderingContext2D, params: RenderParameters) {
     if (!ctx) return;
     const { stage } = params;
@@ -92,6 +101,7 @@ export class Minimap implements UIObject {
     ctx.restore();
   }
 
+  /** 미니맵 내 메인 카메라 시야 사각형 영역 렌더링 */
   private drawViewport(params: RenderParameters) {
     this.ctx.save();
     const { camera, size } = params;
@@ -104,6 +114,7 @@ export class Minimap implements UIObject {
     this.ctx.restore();
   }
 
+  /** 미니맵 내 스테이지 장애물/엔티티 축소 표시 */
   private drawEntities(entities: MapEntityState[], theme: ColorTheme) {
     this.ctx.save();
     entities.forEach((entity) => {
@@ -145,6 +156,7 @@ export class Minimap implements UIObject {
     this.ctx.restore();
   }
 
+  /** 미니맵 내 점/도트 구슬 위치 렌더링 */
   private drawMarbles(params: RenderParameters) {
     const { marbles } = params;
     const viewPort = {
