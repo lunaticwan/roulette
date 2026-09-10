@@ -15,7 +15,7 @@ permissions:
 # Allow only one concurrent deployment
 concurrency:
   group: 'pages'
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -33,16 +33,13 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run linter
-        run: npm run lint
+      - name: Code quality checks (Lint & Typecheck & Test)
+        run: |
+          npm run lint
+          npm run typecheck
+          npm run test
 
-      - name: Run typecheck
-        run: npm run typecheck
-
-      - name: Run tests
-        run: npm run test
-
-      - name: Build
+      - name: Build project
         run: npm run build
 
       - name: Upload artifact
