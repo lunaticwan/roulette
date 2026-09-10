@@ -1,3 +1,5 @@
+import { clamp, shuffle } from 'es-toolkit';
+import { match } from 'ts-pattern';
 import { Camera } from './camera';
 import { canvasHeight, canvasWidth, initialZoom, Skills, Themes, zoomThreshold } from './data/constants';
 import { type StageDef, stages } from './data/maps';
@@ -18,7 +20,7 @@ import type { ColorTheme } from './types/ColorTheme';
 import type { MouseEventHandlerName, MouseEventName } from './types/mouseEvents.type';
 import type { UIObject } from './UIObject';
 import { bound } from './utils/bound.decorator';
-import { parseName, shuffle } from './utils/utils';
+import { parseName } from './utils/utils';
 import { VideoRecorder } from './utils/videoRecorder';
 
 /**
@@ -28,8 +30,8 @@ import { VideoRecorder } from './utils/videoRecorder';
  */
 function clipWinnerRange({ start, end }: WinnerRange, marbleCount: number): WinnerRange {
   const last = Math.max(0, marbleCount - 1);
-  const clippedStart = Math.min(Math.max(0, start), last);
-  return { start: clippedStart, end: Math.min(Math.max(clippedStart, end), last) };
+  const clippedStart = clamp(start, 0, last);
+  return { start: clippedStart, end: clamp(end, clippedStart, last) };
 }
 
 /**
@@ -177,11 +179,15 @@ export class Roulette extends EventTarget {
     for (let i = 0; i < this._marbles.length; i++) {
       const marble = this._marbles[i];
       marble.update(deltaTime);
-      if (marble.skill === Skills.Impact) {
-        this._effects.push(new SkillEffect(marble.x, marble.y));
-        this.physics.impact(marble.id);
-        soundManager.playSkill();
-      }
+
+      match(marble.skill)
+        .with(Skills.Impact, () => {
+          this._effects.push(new SkillEffect(marble.x, marble.y));
+          this.physics.impact(marble.id);
+          soundManager.playSkill();
+        })
+        .otherwise(() => {});
+
       if (marble.y > this._stage.goalY) {
         this._winners.push(marble);
         if (this._isRunning && this._isWinningRank(this._winners.length - 1)) {
