@@ -62,4 +62,44 @@ describe('Marble Outline Rendering Tests', () => {
 
     expect(capturedLineWidth).toBeCloseTo(2 / 30, 5);
   });
+
+  it('충돌(impact) 수치가 존재할 때 렌더링 중 fillRect로 반짝임 효과가 그려져야 함', () => {
+    const marble = new Marble(mockPhysics, 0, 10, 'TestMarble');
+    marble.impact = 300;
+
+    const fillRectSpy = vi.fn();
+    const mockCtx = {
+      save: vi.fn(),
+      restore: vi.fn(),
+      getTransform: vi.fn().mockReturnValue({}),
+      setTransform: vi.fn(),
+      beginPath: vi.fn(),
+      arc: vi.fn(),
+      stroke: vi.fn(),
+      fill: vi.fn(),
+      clip: vi.fn(),
+      translate: vi.fn(),
+      scale: vi.fn(),
+      rotate: vi.fn(),
+      fillRect: fillRectSpy,
+      strokeText: vi.fn(),
+      fillText: vi.fn(),
+      createRadialGradient: vi.fn().mockReturnValue({
+        addColorStop: vi.fn(),
+      }),
+      lineWidth: 1,
+      strokeStyle: '',
+      fillStyle: '',
+      shadowBlur: 0,
+      shadowColor: '',
+      font: '',
+    } as unknown as CanvasRenderingContext2D;
+
+    const zoom = 30;
+    const viewPort = { x: 10, y: 10, w: 100, h: 100, zoom };
+
+    marble.render(mockCtx, zoom, false, false, undefined, viewPort, Themes.dark);
+
+    expect(fillRectSpy).toHaveBeenCalled();
+  });
 });

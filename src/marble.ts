@@ -197,14 +197,18 @@ export class Marble {
    */
   private _drawMarbleBody(ctx: CanvasRenderingContext2D) {
     const radius = this.size / 2;
-    const lightness = Math.min(85, this.theme.marbleLightness + 25 * Math.min(1, this.impact / 500));
-    const lightX = this.x - radius * 0.35;
-    const lightY = this.y - radius * 0.35;
+    const impactFactor = Math.min(1, this.impact / 300);
+    const lightness = Math.min(85, this.theme.marbleLightness + 25 * impactFactor);
+    const lightAngle = this.x * 0.2 + this.y * 0.2;
+    const lightOffsetX = Math.cos(lightAngle) * radius * 0.08;
+    const lightOffsetY = Math.sin(lightAngle) * radius * 0.08;
+    const lightX = this.x - radius * 0.35 + lightOffsetX;
+    const lightY = this.y - radius * 0.35 + lightOffsetY;
 
     this._render3DBaseBody(ctx, radius, lightness, lightX, lightY);
     this._renderGlassSwirl(ctx, radius);
-    this._renderSpecularHighlight(ctx, radius, lightX, lightY);
-    this._renderRimReflection(ctx, radius);
+    this._renderSpecularHighlight(ctx, radius, lightX, lightY, impactFactor);
+    this._renderRimReflection(ctx, radius, impactFactor);
   }
 
   /**
@@ -212,11 +216,15 @@ export class Marble {
    */
   private _drawGlassOverlay(ctx: CanvasRenderingContext2D) {
     const radius = this.size / 2;
-    const lightX = this.x - radius * 0.35;
-    const lightY = this.y - radius * 0.35;
+    const impactFactor = Math.min(1, this.impact / 300);
+    const lightAngle = this.x * 0.2 + this.y * 0.2;
+    const lightOffsetX = Math.cos(lightAngle) * radius * 0.08;
+    const lightOffsetY = Math.sin(lightAngle) * radius * 0.08;
+    const lightX = this.x - radius * 0.35 + lightOffsetX;
+    const lightY = this.y - radius * 0.35 + lightOffsetY;
 
-    this._renderSpecularHighlight(ctx, radius, lightX, lightY);
-    this._renderRimReflection(ctx, radius);
+    this._renderSpecularHighlight(ctx, radius, lightX, lightY, impactFactor);
+    this._renderRimReflection(ctx, radius, impactFactor);
   }
 
   /**
@@ -285,40 +293,61 @@ export class Marble {
   /**
    * 3. 주 광택 곡면 하이라이트 및 대각선 대향 보조 핀포인트 스페큘러.
    */
-  private _renderSpecularHighlight(ctx: CanvasRenderingContext2D, radius: number, lightX: number, lightY: number) {
-    // 주 타원형 곡면 광택
-    const primaryGrad = ctx.createRadialGradient(lightX, lightY, 0, lightX, lightY, radius * 0.52);
-    primaryGrad.addColorStop(0, 'rgba(255, 255, 255, 0.92)');
-    primaryGrad.addColorStop(0.35, 'rgba(255, 255, 255, 0.45)');
+  private _renderSpecularHighlight(
+    ctx: CanvasRenderingContext2D,
+    radius: number,
+    lightX: number,
+    lightY: number,
+    impactFactor: number = 0
+  ) {
+    const glint = Math.min(1, 0.92 + impactFactor * 0.08);
+    const primaryGrad = ctx.createRadialGradient(
+      lightX,
+      lightY,
+      0,
+      lightX,
+      lightY,
+      radius * (0.52 + impactFactor * 0.1)
+    );
+    primaryGrad.addColorStop(0, `rgba(255, 255, 255, ${glint})`);
+    primaryGrad.addColorStop(0.35, `rgba(255, 255, 255, ${0.45 + impactFactor * 0.2})`);
     primaryGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
 
     ctx.fillStyle = primaryGrad;
     ctx.beginPath();
-    ctx.arc(lightX, lightY, radius * 0.52, 0, Math.PI * 2);
+    ctx.arc(lightX, lightY, radius * (0.52 + impactFactor * 0.1), 0, Math.PI * 2);
     ctx.fill();
 
     // 대각선 반대편 보조 핀포인트 반사
     const subX = this.x + radius * 0.32;
     const subY = this.y + radius * 0.32;
     const secondaryGrad = ctx.createRadialGradient(subX, subY, 0, subX, subY, radius * 0.22);
-    secondaryGrad.addColorStop(0, 'rgba(255, 255, 255, 0.65)');
+    secondaryGrad.addColorStop(0, `rgba(255, 255, 255, ${Math.min(1, 0.65 + impactFactor * 0.25)})`);
     secondaryGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
 
     ctx.fillStyle = secondaryGrad;
     ctx.beginPath();
     ctx.arc(subX, subY, radius * 0.22, 0, Math.PI * 2);
     ctx.fill();
+
+    if (impactFactor > 0.1) {
+      transformGuard(ctx, () => {
+        ctx.translate(lightX, lightY);
+        ctx.fillStyle = `rgba(255, 255, 255, ${impactFactor * 0.8})`;
+        ctx.fillRect(-radius * 0.25, -radius * 0.03, radius * 0.5, radius * 0.06);
+        ctx.fillRect(-radius * 0.03, -radius * 0.25, radius * 0.06, radius * 0.5);
+      });
+    }
   }
 
   /**
    * 4. 프레넬 외곽 반사광(Fresnel Rim Light) 및 하단 반사림 효과.
    */
-  private _renderRimReflection(ctx: CanvasRenderingContext2D, radius: number) {
-    // 프레넬 엣지 링 반사광
-    const rimGrad = ctx.createRadialGradient(this.x, this.y, radius * 0.8, this.x, this.y, radius);
+  private _renderRimReflection(ctx: CanvasRenderingContext2D, radius: number, impactFactor: number = 0) {
+    const rimGrad = ctx.createRadialGradient(this.x, this.y, radius * 0.7, this.x, this.y, radius);
     rimGrad.addColorStop(0, 'rgba(255, 255, 255, 0)');
-    rimGrad.addColorStop(0.7, `hsla(${this.hue}, 100%, 85%, 0.25)`);
-    rimGrad.addColorStop(1, 'rgba(255, 255, 255, 0.6)');
+    rimGrad.addColorStop(0.75, `hsla(${this.hue}, 100%, 85%, ${0.25 + impactFactor * 0.35})`);
+    rimGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
 
     ctx.fillStyle = rimGrad;
     ctx.beginPath();

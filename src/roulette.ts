@@ -238,8 +238,9 @@ export class Roulette extends EventTarget {
     if (!this._isRunning) return;
     const { start, end } = this._winnerRange;
 
-    const early = this._winners.length > 0 && this._marbles.length === 1;
-    const ranked = early ? [...this._winners, this._marbles[0]] : this._winners;
+    const allSameName = this._marbles.length > 0 && this._marbles.every((m) => m.name === this._marbles[0].name);
+    const early = this._winners.length > 0 && allSameName;
+    const ranked = early ? [...this._winners, ...this._marbles] : this._winners;
     if (ranked.length <= end) return;
 
     if (early && this._isWinningRank(this._winners.length)) {
