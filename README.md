@@ -24,14 +24,14 @@ Box2D-WASM 물리 엔진, Vite, TypeScript 기반으로 제작된 고성능 웹 
 
 ## 🛠 기술 스택 (Tech Stack)
 
-| 구분 | 주요 기술 |
-| :--- | :--- |
-| **Language & Runtime** | TypeScript 5.x, Node.js (ES Module) |
-| **Build & Bundler** | Vite 8.x, Sass |
-| **Physics Engine** | `box2d-wasm` |
-| **Audio & Effects** | `howler` (Web Audio API 음향), `canvas-confetti` (승리 폭죽 효과) |
-| **Helper & Utility** | `zod` (런타임 검증), `es-toolkit` (유틸리티), `ts-pattern` (패턴 매칭) |
-| **Testing & Quality** | Vitest (Happy-DOM), ESLint (Flat Config), Prettier |
+| 구분                   | 주요 기술                                                              |
+| :--------------------- | :--------------------------------------------------------------------- |
+| **Language & Runtime** | TypeScript 5.x, Node.js (ES Module)                                    |
+| **Build & Bundler**    | Vite 8.x, Sass                                                         |
+| **Physics Engine**     | `box2d-wasm`                                                           |
+| **Audio & Effects**    | `howler` (Web Audio API 음향), `canvas-confetti` (승리 폭죽 효과)      |
+| **Helper & Utility**   | `zod` (런타임 검증), `es-toolkit` (유틸리티), `ts-pattern` (패턴 매칭) |
+| **Testing & Quality**  | Vitest (Happy-DOM), ESLint (Flat Config), Prettier                     |
 
 ---
 

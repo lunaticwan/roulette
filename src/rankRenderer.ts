@@ -23,6 +23,14 @@ export class RankRenderer implements UIObject {
   private messageHandler?: (msg: string) => void;
 
   /** 마우스 휠 조작 시 순위표 위치 스크롤 */
+  private julesLog(eventName: string, data?: unknown) {
+    try {
+      console.log(`[Jules Log] [RankRenderer] [${eventName}]`, JSON.parse(JSON.stringify(data ?? {})));
+    } catch {
+      console.log(`[Jules Log] [RankRenderer] [${eventName}]`, data);
+    }
+  }
+
   @bound
   onWheel(e: WheelEvent) {
     this._targetY += e.deltaY;
@@ -30,12 +38,18 @@ export class RankRenderer implements UIObject {
       this._targetY = this.maxY;
     }
     this._userMoved = 2000;
+    this.julesLog('onWheel', { deltaY: e.deltaY, targetY: this._targetY, maxY: this.maxY });
   }
 
   /** 더블 클릭 시 현재 순위표 결과 TSV 형식 클립보드 복사 */
   @bound
   onDblClick(e?: MouseEventArgs) {
     if (e) {
+      this.julesLog('onDblClick', {
+        mouseEventArgs: e,
+        winnersCount: this.winners.length,
+        marblesCount: this.marbles.length,
+      });
       if (navigator.clipboard) {
         const tsv: string[] = [];
         let rank = 0;

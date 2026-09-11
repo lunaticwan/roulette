@@ -41,8 +41,17 @@ export class Minimap implements UIObject {
   }
 
   /** 미니맵 마우스 상호작용에 따른 뷰포트 이동 이벤트 콜백 등록 */
+  private julesLog(eventName: string, data?: unknown) {
+    try {
+      console.log(`[Jules Log] [Minimap] [${eventName}]`, JSON.parse(JSON.stringify(data ?? {})));
+    } catch {
+      console.log(`[Jules Log] [Minimap] [${eventName}]`, data);
+    }
+  }
+
   onViewportChange(callback: (pos?: VectorLike) => void) {
     this._onViewportChangeHandler = callback;
+    this.julesLog('onViewportChange', { handlerRegistered: true });
   }
 
   update(): void {
@@ -54,6 +63,7 @@ export class Minimap implements UIObject {
   onMouseMove(e?: { x: number; y: number }) {
     if (!e) {
       this.mousePosition = null;
+      this.julesLog('onMouseMove', { mousePosition: null });
       if (this._onViewportChangeHandler) {
         this._onViewportChangeHandler();
       }
@@ -64,11 +74,13 @@ export class Minimap implements UIObject {
       x: e.x,
       y: e.y,
     };
+    const targetPos = {
+      x: this.mousePosition.x / MINIMAP_SCALE,
+      y: this.mousePosition.y / MINIMAP_SCALE,
+    };
+    this.julesLog('onMouseMove', { mousePosition: this.mousePosition, targetViewportPos: targetPos });
     if (this._onViewportChangeHandler) {
-      this._onViewportChangeHandler({
-        x: this.mousePosition.x / MINIMAP_SCALE,
-        y: this.mousePosition.y / MINIMAP_SCALE,
-      });
+      this._onViewportChangeHandler(targetPos);
     }
   }
 
