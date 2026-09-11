@@ -66,9 +66,18 @@
         const urlInput = document.querySelector('#in_youtubeUrl');
         if (!urlInput) return;
         const url = urlInput.value.trim();
+        if (!url) {
+          julesLog('YouTubeAudioPlayRequestEmpty', {});
+          return;
+        }
         const videoId = extractYouTubeVideoId(url);
         julesLog('YouTubeAudioPlayRequest', { url, videoId, rewind });
-        if (!videoId) return;
+        if (!videoId) {
+          julesLog('YouTubeAudioInvalidUrl', { url });
+          simpleToast('Invalid YouTube URL');
+          stopYouTubeAudio();
+          return;
+        }
 
         let iframe = document.querySelector('#yt-audio-iframe');
         if (!iframe) {
