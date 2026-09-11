@@ -168,6 +168,9 @@ export class Marble {
       transformGuard(ctx, () => {
         ctx.translate(this.x, this.y);
         ctx.rotate(this.angle);
+        ctx.beginPath();
+        ctx.arc(0, 0, hs, 0, Math.PI * 2);
+        ctx.clip();
         ctx.drawImage(skin, -hs, -hs, hs * 2, hs * 2);
       });
       this._drawGlassOverlay(ctx);
@@ -184,7 +187,7 @@ export class Marble {
       this._drawOutline(ctx, 2 / zoom);
     }
 
-    if (options.useSkills) {
+    if (options.useSkills && this.isActive) {
       this._renderCoolTime(ctx, zoom);
     }
   }
