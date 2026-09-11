@@ -8,6 +8,9 @@ vi.mock('./physics-box2d', () => {
       async init(): Promise<void> {}
       createStage(): void {}
       createMarble(): void {}
+      getMarblePosition(): { x: number; y: number; angle: number } {
+        return { x: 0, y: 0, angle: 0 };
+      }
       getEntities(): unknown[] {
         return [];
       }
@@ -74,5 +77,29 @@ describe('Roulette state and guard logic', () => {
 
     roulette.reset();
     expect(roulette.getCount()).toBe(0);
+  });
+
+  it('골인이 시작된 후 남아있는 구슬들의 이름이 모두 동일할 때 조기 종료되어야 함', async () => {
+    const roulette = new Roulette();
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    roulette.setMarbles(['A*3', 'B*1']);
+    roulette.start();
+    expect(roulette.isRunning).toBe(true);
+
+    const goalSpy = vi.fn();
+    roulette.addEventListener('goal', goalSpy);
+
+    const marbles = (roulette as unknown as { _marbles: { name: string }[] })._marbles;
+    const winners = (roulette as unknown as { _winners: { name: string }[] })._winners;
+    const bIndex = marbles.findIndex((m) => m.name === 'B');
+    if (bIndex >= 0) {
+      winners.push(marbles.splice(bIndex, 1)[0]);
+    }
+
+    (roulette as unknown as { _checkFinish: () => void })._checkFinish();
+
+    expect(roulette.isRunning).toBe(false);
+    expect(goalSpy).toHaveBeenCalled();
   });
 });
