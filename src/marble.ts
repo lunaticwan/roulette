@@ -153,7 +153,7 @@ export class Marble {
   private _renderMinimap(ctx: CanvasRenderingContext2D) {
     ctx.fillStyle = this.color;
     ctx.beginPath();
-    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    ctx.arc(this.x, this.y, this.size * 2, 0, Math.PI * 2);
     ctx.fill();
   }
 

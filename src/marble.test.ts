@@ -102,4 +102,28 @@ describe('Marble Outline Rendering Tests', () => {
 
     expect(fillRectSpy).toHaveBeenCalled();
   });
+
+  it('isMinimap가 true일 때 arc의 반지름이 this.size * 2로 전달되어야 함', () => {
+    const marble = new Marble(mockPhysics, 0, 10, 'TestMarble');
+    const arcSpy = vi.fn();
+    const mockCtx = {
+      save: vi.fn(),
+      restore: vi.fn(),
+      getTransform: vi.fn().mockReturnValue({}),
+      setTransform: vi.fn(),
+      beginPath: vi.fn(),
+      arc: arcSpy,
+      fill: vi.fn(),
+      lineWidth: 1,
+      strokeStyle: '',
+      fillStyle: '',
+    } as unknown as CanvasRenderingContext2D;
+
+    const zoom = 1;
+    const viewPort = { x: 10, y: 10, w: 100, h: 100, zoom };
+
+    marble.render(mockCtx, zoom, false, true, undefined, viewPort, Themes.dark);
+
+    expect(arcSpy).toHaveBeenCalledWith(marble.x, marble.y, marble.size * 2, 0, Math.PI * 2);
+  });
 });
