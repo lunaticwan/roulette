@@ -46,11 +46,21 @@ export class FastForwader implements UIObject {
     return this.bound;
   }
 
+  private julesLog(eventName: string, data?: unknown) {
+    try {
+      console.log(`[Jules Log] [FastForwader] [${eventName}]`, JSON.parse(JSON.stringify(data ?? {})));
+    } catch {
+      console.log(`[Jules Log] [FastForwader] [${eventName}]`, data);
+    }
+  }
+
   onMouseDown?(_e?: MouseEventArgs): void {
     this.isEnabled = true;
+    this.julesLog('MouseDown', { isEnabled: this.isEnabled, speed: this.speed });
   }
 
   onMouseUp?(_e?: MouseEventArgs): void {
     this.isEnabled = false;
+    this.julesLog('MouseUp', { isEnabled: this.isEnabled, speed: this.speed });
   }
 }

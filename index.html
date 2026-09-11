@@ -36,6 +36,55 @@
   <body>
     <script type="module" src="./src/index.ts"></script>
     <script type="text/javascript">
+      function julesLog(eventName, data) {
+        try {
+          console.log(`[Jules Log] [DOM Event] [${eventName}]`, JSON.parse(JSON.stringify(data ?? {})));
+        } catch (e) {
+          console.log(`[Jules Log] [DOM Event] [${eventName}]`, data);
+        }
+      }
+
+      function extractYouTubeVideoId(url) {
+        if (!url) return null;
+        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+        const match = url.match(regExp);
+        return match && match[2].length === 11 ? match[2] : null;
+      }
+
+      function playYouTubeAudio() {
+        const urlInput = document.querySelector('#in_youtubeUrl');
+        if (!urlInput) return;
+        const url = urlInput.value.trim();
+        const videoId = extractYouTubeVideoId(url);
+        julesLog('YouTubeAudioPlayRequest', { url, videoId });
+        if (!videoId) return;
+
+        let iframe = document.querySelector('#yt-audio-iframe');
+        if (!iframe) {
+          const container = document.createElement('div');
+          container.id = 'yt-audio-container';
+          container.style.cssText =
+            'display:none; position:absolute; width:1px; height:1px; overflow:hidden; opacity:0; pointer-events:none;';
+          iframe = document.createElement('iframe');
+          iframe.id = 'yt-audio-iframe';
+          iframe.width = '1';
+          iframe.height = '1';
+          iframe.allow = 'autoplay';
+          container.appendChild(iframe);
+          document.body.appendChild(container);
+        }
+        iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&enablejsapi=1`;
+        julesLog('YouTubeAudioStarted', { videoId, src: iframe.src });
+      }
+
+      function stopYouTubeAudio() {
+        const iframe = document.querySelector('#yt-audio-iframe');
+        if (iframe) {
+          julesLog('YouTubeAudioStopped', { src: iframe.src });
+          iframe.src = '';
+        }
+      }
+
       function getNames() {
         const value = document.querySelector('#in_names').value.trim();
         return value
@@ -70,6 +119,7 @@
         if (btnStart) {
           btnStart.disabled = !ready;
         }
+        julesLog('getReady', { namesCount: names.length, ready, winnerType });
       }
 
       function updateMarbleCounter(names) {
@@ -139,9 +189,12 @@
         document.querySelector('.btn-multi-winner').classList.toggle('active', winnerType === 'multi');
         rankInput.classList.toggle('active', winnerType === 'custom');
         document.querySelector('.row-range').classList.toggle('active', winnerType === 'multi');
+
+        julesLog('applyWinnerSetting', { winnerType, edited, clipped });
       }
 
       function selectWinnerType(type, edited) {
+        julesLog('selectWinnerType', { previousType: winnerType, newType: type, edited });
         winnerType = type;
         applyWinnerSetting(edited);
       }
@@ -155,11 +208,27 @@
 
       function initialize() {
         if (!window.roulette || !window.roulette.isReady) {
-          console.log('does not loaded yet');
+          julesLog('InitializationPending', { readyState: false });
           setTimeout(initialize, 100);
           return;
         }
-        console.log('initializing start');
+        julesLog('InitializationStart', { readyState: true });
+
+        const savedYtUrl = localStorage.getItem('mbr_youtube_url') || 'https://www.youtube.com/watch?v=5qap5aO4i9A';
+        const ytInput = document.querySelector('#in_youtubeUrl');
+        if (ytInput) {
+          ytInput.value = savedYtUrl;
+          ytInput.addEventListener('input', (e) => {
+            const val = e.target.value;
+            localStorage.setItem('mbr_youtube_url', val);
+            julesLog('YouTubeUrlInput', { value: val, videoId: extractYouTubeVideoId(val) });
+          });
+          ytInput.addEventListener('change', (e) => {
+            const val = e.target.value;
+            localStorage.setItem('mbr_youtube_url', val);
+            julesLog('YouTubeUrlChange', { value: val, videoId: extractYouTubeVideoId(val) });
+          });
+        }
 
         const urlParams = new URLSearchParams(window.location.search);
         const namesFromUrl = urlParams.get('names');
@@ -173,6 +242,7 @@
           }
         }
         document.querySelector('#in_names').addEventListener('input', () => {
+          julesLog('InNamesInput', { rawValue: document.querySelector('#in_names').value });
           getReady();
         });
 
@@ -201,6 +271,8 @@
           const oldValue = document.querySelector('#in_names').value;
           const newValue = result.join(',');
 
+          julesLog('InNamesBlur', { oldValue, newValue });
+
           if (oldValue !== newValue) {
             document.querySelector('#in_names').value = newValue;
             getReady();
@@ -208,32 +280,45 @@
         });
 
         document.querySelector('#btnShuffle').addEventListener('click', () => {
+          julesLog('BtnShuffleClick', { currentNames: getNames() });
+          stopYouTubeAudio();
           getReady();
         });
 
         document.querySelector('#btnReset').addEventListener('click', () => {
+          julesLog('BtnResetClick', { currentNames: getNames() });
+          stopYouTubeAudio();
           getReady();
         });
 
         document.querySelector('#btnStart').addEventListener('click', (e) => {
+          julesLog('BtnStartClick', {
+            ready,
+            isRunning: window.roulette ? window.roulette.isRunning : false,
+            winnerType,
+          });
           if (!ready || (window.roulette && window.roulette.isRunning)) return;
           const btn = e.currentTarget;
           if (btn) btn.disabled = true;
           document.querySelector('#settings').classList.add('hide');
+          playYouTubeAudio();
           window.roulette.start();
         });
 
         document.querySelector('#chkAutoRecording').addEventListener('change', (e) => {
           window.options.autoRecording = e.target.matches(':checked');
+          julesLog('ChkAutoRecordingChange', { checked: window.options.autoRecording });
           window.roulette.setAutoRecording(window.options.autoRecording);
         });
 
         document.querySelector('#chkSkill').addEventListener('change', (e) => {
           window.options.useSkills = e.target.matches(':checked');
+          julesLog('ChkSkillChange', { checked: window.options.useSkills });
         });
 
         document.querySelector('#chkSound').addEventListener('change', (e) => {
           window.options.soundEnabled = e.target.matches(':checked');
+          julesLog('ChkSoundChange', { checked: window.options.soundEnabled });
           if (window.roulette && window.roulette.soundManager) {
             window.roulette.soundManager.setEnabled(window.options.soundEnabled);
           }
@@ -241,18 +326,39 @@
 
         document.querySelector('#chkDarkMode').addEventListener('change', (e) => {
           window.options.darkMode = e.target.matches(':checked');
+          julesLog('ChkDarkModeChange', { checked: window.options.darkMode });
           window.roulette.setTheme(window.options.darkMode ? 'dark' : 'light');
           document.documentElement.classList.toggle('light', !window.options.darkMode);
         });
 
-        document.querySelector('#in_winningRank').addEventListener('change', () => selectWinnerType('custom'));
-        document.querySelector('.btn-last-winner').addEventListener('click', () => selectWinnerType('last'));
-        document.querySelector('.btn-first-winner').addEventListener('click', () => selectWinnerType('first'));
-        document.querySelector('.btn-multi-winner').addEventListener('click', () => selectWinnerType('multi'));
-        document.querySelector('#in_rangeStart').addEventListener('change', () => selectWinnerType('multi', 'start'));
-        document.querySelector('#in_rangeEnd').addEventListener('change', () => selectWinnerType('multi', 'end'));
+        document.querySelector('#in_winningRank').addEventListener('change', (e) => {
+          julesLog('InWinningRankChange', { value: e.target.value });
+          selectWinnerType('custom');
+        });
+        document.querySelector('.btn-last-winner').addEventListener('click', () => {
+          julesLog('BtnLastWinnerClick', {});
+          selectWinnerType('last');
+        });
+        document.querySelector('.btn-first-winner').addEventListener('click', () => {
+          julesLog('BtnFirstWinnerClick', {});
+          selectWinnerType('first');
+        });
+        document.querySelector('.btn-multi-winner').addEventListener('click', () => {
+          julesLog('BtnMultiWinnerClick', {});
+          selectWinnerType('multi');
+        });
+        document.querySelector('#in_rangeStart').addEventListener('change', (e) => {
+          julesLog('InRangeStartChange', { value: e.target.value });
+          selectWinnerType('multi', 'start');
+        });
+        document.querySelector('#in_rangeEnd').addEventListener('change', (e) => {
+          julesLog('InRangeEndChange', { value: e.target.value });
+          selectWinnerType('multi', 'end');
+        });
 
-        window.roulette.addEventListener('goal', () => {
+        window.roulette.addEventListener('goal', (e) => {
+          julesLog('RouletteGoalEvent', e.detail);
+          stopYouTubeAudio();
           ready = false;
           setTimeout(() => {
             getReady();
@@ -261,6 +367,7 @@
         });
 
         window.roulette.addEventListener('message', (e) => {
+          julesLog('RouletteMessageEvent', e.detail);
           simpleToast(e.detail);
         });
 
@@ -268,9 +375,9 @@
         const collapsible = document.querySelector('.collapsible-rows');
         toggleBtn.addEventListener('click', () => {
           collapsible.classList.toggle('collapsed');
-          toggleBtn.querySelector('.toggle-arrow').textContent = collapsible.classList.contains('collapsed')
-            ? '▲'
-            : '▼';
+          const isCollapsed = collapsible.classList.contains('collapsed');
+          julesLog('BtnToggleSettingsClick', { collapsed: isCollapsed });
+          toggleBtn.querySelector('.toggle-arrow').textContent = isCollapsed ? '▲' : '▼';
         });
 
         document.querySelector('#btnShuffle').click();
@@ -286,19 +393,18 @@
           mapSelector.append(option);
         });
         mapSelector.addEventListener('change', (e) => {
+          julesLog('SltMapChange', { selectedIndex: e.target.value });
           window.roulette.setMap(e.target.value);
-          // setMap은 살아남은 구슬에서 이름을 뽑아 재구성한다. 골인한 구슬이 사라지고
-          // 무게(/n)도 날아가므로, 원본인 이름 입력창에서 다시 채운다
           getReady();
         });
 
         function simpleToast(msg) {
+          julesLog('SimpleToastShow', { msg });
           const toast = document.createElement('div');
           toast.classList.add('toast');
           toast.innerHTML = msg;
 
           if (window.translateElement) {
-            console.log('try to translate');
             window.translateElement(toast);
           }
 
@@ -323,6 +429,29 @@
               <span data-trans>Map</span>
             </label>
             <select id="sltMap" title="Map" data-trans="title"></select>
+          </div>
+          <div class="row row-youtube">
+            <label for="in_youtubeUrl">
+              <i class="icon play"></i>
+              <span>BGM (YouTube)</span>
+            </label>
+            <input
+              type="text"
+              id="in_youtubeUrl"
+              placeholder="YouTube URL (e.g. https://www.youtube.com/watch?v=...)"
+              title="YouTube BGM Link"
+              style="
+                height: 32px;
+                width: 100%;
+                border-radius: 8px;
+                background: rgba(10, 14, 23, 0.65);
+                border: 1px solid rgba(255, 255, 255, 0.12);
+                color: #f8fafc;
+                padding: 0 10px;
+                font-size: 12px;
+                outline: none;
+              "
+            />
           </div>
           <div class="row row-toggles">
             <div class="toggle-item">

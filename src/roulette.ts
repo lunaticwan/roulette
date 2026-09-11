@@ -38,6 +38,14 @@ function clipWinnerRange({ start, end }: WinnerRange, marbleCount: number): Winn
  * 마블 룰렛 게임 엔진 메인 클래스
  * 물리 연산, 구슬 상태 관리, 카메라, 렌더링, 사운드, 비디오 녹화 통괄
  */
+function julesLog(eventName: string, data?: unknown) {
+  try {
+    console.log(`[Jules Log] [Roulette] [${eventName}]`, JSON.parse(JSON.stringify(data ?? {})));
+  } catch {
+    console.log(`[Jules Log] [Roulette] [${eventName}]`, data);
+  }
+}
+
 export class Roulette extends EventTarget {
   private _marbles: Marble[] = [];
 
@@ -108,6 +116,7 @@ export class Roulette extends EventTarget {
     this._renderer.init().then(() => {
       this._init().then(() => {
         this._isReady = true;
+        julesLog('Initialized', { isReady: true });
         this._update();
       });
     });
@@ -121,12 +130,13 @@ export class Roulette extends EventTarget {
   /** UI 객체 등록 및 이벤트 리스너 연결 */
   private addUiObject(obj: UIObject) {
     this._uiObjects.push(obj);
+    julesLog('addUiObject', { type: obj.constructor.name });
     if (obj.onWheel) {
       this._renderer.canvas.addEventListener('wheel', obj.onWheel);
     }
     if (obj.onMessage) {
       obj.onMessage((msg) => {
-        console.log('onMessage', msg);
+        julesLog('onMessage', { msg });
         this.dispatchEvent(new CustomEvent('message', { detail: msg }));
       });
     }
@@ -240,9 +250,11 @@ export class Roulette extends EventTarget {
     this._isRunning = false;
     confettiManager.triggerVictoryShower();
     soundManager.playVictory();
+    const eventDetail = { winner: this._result[0].name, winners: this._result.map((m) => m.name) };
+    julesLog('Finish', { winnerRange: this._winnerRange, result: eventDetail });
     this.dispatchEvent(
       new CustomEvent('goal', {
-        detail: { winner: this._result[0].name, winners: this._result.map((m) => m.name) },
+        detail: eventDetail,
       })
     );
     setTimeout(() => {
@@ -326,6 +338,7 @@ export class Roulette extends EventTarget {
 
     const sizeFactor = this._renderer.sizeFactor;
     const pos = { x: e.offsetX * sizeFactor, y: e.offsetY * sizeFactor };
+    julesLog('mouseHandler', { eventName, offsetX: e.offsetX, offsetY: e.offsetY, button: e.button, pos });
     this._uiObjects.forEach((obj) => {
       if (!obj[handlerName]) return;
       const bounds = obj.getBoundingBox();
@@ -370,7 +383,9 @@ export class Roulette extends EventTarget {
     });
 
     canvas.addEventListener('click', (e) => {
-      if (this.resultCloseHitAt(e)) {
+      const isCloseHit = this.resultCloseHitAt(e);
+      julesLog('CanvasClick', { offsetX: e.offsetX, offsetY: e.offsetY, isResultCloseHit: isCloseHit });
+      if (isCloseHit) {
         this._renderer.closeResultPopup();
       }
     });
@@ -392,6 +407,7 @@ export class Roulette extends EventTarget {
 
   /** 현재 모든 구슬 및 예약된 제거 타이머 초기화 */
   public clearMarbles() {
+    julesLog('clearMarbles', { currentCount: this._marbles.length });
     this._pendingRemovals.forEach((id) => window.clearTimeout(id));
     this._pendingRemovals = [];
     this.physics.clearMarbles();
@@ -417,6 +433,14 @@ export class Roulette extends EventTarget {
     this._winnerRange = clipWinnerRange(options.winnerRange, this._marbles.length);
     this._camera.startFollowingMarbles();
 
+    julesLog('Start', {
+      marblesCount: this._marbles.length,
+      winnerRange: this._winnerRange,
+      autoRecording: this._autoRecording,
+      speed: this._speed,
+      stage: this._stage?.title,
+    });
+
     if (this._autoRecording) {
       this._recorder.start().then(() => {
         this.physics.start();
@@ -433,6 +457,7 @@ export class Roulette extends EventTarget {
     if (value <= 0) {
       throw new Error('Speed multiplier must larger than 0');
     }
+    julesLog('setSpeed', { value });
     this._speed = value;
   }
 
@@ -444,6 +469,7 @@ export class Roulette extends EventTarget {
 
   /** 테마 변경 */
   public setTheme(themeName: keyof typeof Themes) {
+    julesLog('setTheme', { themeName });
     this._theme = Themes[themeName];
   }
 
@@ -461,6 +487,7 @@ export class Roulette extends EventTarget {
   public setWinnerRange(start: number, end: number) {
     options.winnerRange = { start, end };
     this._winnerRange = clipWinnerRange(options.winnerRange, this._marbles.length);
+    julesLog('setWinnerRange', { requested: { start, end }, applied: this._winnerRange });
   }
 
   /** 현재 적용된 당첨 순위 범위 반환 */
@@ -470,6 +497,7 @@ export class Roulette extends EventTarget {
 
   /** 자동 비디오 녹화 여부 설정 */
   public setAutoRecording(value: boolean) {
+    julesLog('setAutoRecording', { value });
     this._autoRecording = value;
   }
 
@@ -519,6 +547,12 @@ export class Roulette extends EventTarget {
       }
     });
 
+    julesLog('setMarbles', {
+      rawNamesCount: names.length,
+      parsedMembersCount: members.length,
+      totalMarblesCount: totalCount,
+    });
+
     if (totalCount > 0) {
       const cols = Math.min(totalCount, 10);
       const rows = Math.ceil(totalCount / 10);
@@ -548,6 +582,7 @@ export class Roulette extends EventTarget {
 
   /** 경기를 완전히 리셋하고 맵 다시 로드 */
   public reset() {
+    julesLog('reset', {});
     this.clearMarbles();
     this._clearMap();
     this._loadMap();
@@ -588,6 +623,7 @@ export class Roulette extends EventTarget {
     }
     const names = this._marbles.map((marble) => marble.name);
     this._stage = stages[index];
+    julesLog('setMap', { index, title: this._stage.title });
     this.setMarbles(names);
     this._camera.initializePosition();
   }
