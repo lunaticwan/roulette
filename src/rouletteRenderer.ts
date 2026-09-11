@@ -30,7 +30,6 @@ export type RenderParameters = {
   theme: ColorTheme;
 };
 
-const WINNER_TEXT_OFFSET = 30;
 const RESULT_PANEL_MAX_WIDTH_RATIO = 0.9;
 const RESULT_PANEL_MAX_HEIGHT_RATIO = 0.8;
 const RESULT_COLUMN_MAX_WIDTH = 280;
@@ -555,23 +554,28 @@ export class RouletteRenderer {
     ctx.restore();
   }
 
-  /** 단일 당첨자 최하단 배너 렌더링 (화면 중앙 정렬) */
+  /** 단일 당첨자 상단 배너 렌더링 (화면 상단 중앙 정렬) */
   private renderWinner(winner: Marble, theme: ColorTheme) {
     const sceneW = this._logicalWidth;
-    const sceneH = this._logicalHeight;
 
     const bannerWidth = sceneW;
     const bannerX = 0;
+    const bannerY = 0;
 
     this.ctx.save();
 
-    const bgGradient = this.ctx.createLinearGradient(bannerX, sceneH - winnerAreaHeight, bannerX + bannerWidth, sceneH);
+    const bgGradient = this.ctx.createLinearGradient(
+      bannerX,
+      bannerY,
+      bannerX + bannerWidth,
+      bannerY + winnerAreaHeight
+    );
     bgGradient.addColorStop(0, 'rgba(20, 20, 30, 0.85)');
     bgGradient.addColorStop(0.5, 'rgba(35, 30, 10, 0.9)');
     bgGradient.addColorStop(1, 'rgba(20, 20, 30, 0.85)');
 
     this.ctx.fillStyle = bgGradient;
-    this.ctx.fillRect(bannerX, sceneH - winnerAreaHeight, bannerWidth, winnerAreaHeight);
+    this.ctx.fillRect(bannerX, bannerY, bannerWidth, winnerAreaHeight);
 
     const goldGradient = this.ctx.createLinearGradient(bannerX, 0, bannerX + bannerWidth, 0);
     goldGradient.addColorStop(0, '#ffd700');
@@ -579,7 +583,7 @@ export class RouletteRenderer {
     goldGradient.addColorStop(1, '#ffd700');
 
     this.ctx.fillStyle = goldGradient;
-    this.ctx.fillRect(bannerX, sceneH - winnerAreaHeight, bannerWidth, 3);
+    this.ctx.fillRect(bannerX, bannerY + winnerAreaHeight - 3, bannerWidth, 3);
 
     const scale = Math.min(1, sceneW / 640);
     const marbleSize = Math.max(48, Math.min(90, Math.round(90 * scale)));
@@ -601,7 +605,7 @@ export class RouletteRenderer {
 
     const startX = Math.max(10, (sceneW - totalWidth) / 2);
     const marbleCenterX = startX + marbleSize / 2;
-    const marbleCenterY = sceneH - winnerAreaHeight / 2;
+    const marbleCenterY = bannerY + winnerAreaHeight / 2;
     const textX = startX + marbleSize + gap;
 
     const marbleImage = this.getMarbleImage(winner.name);
@@ -625,8 +629,8 @@ export class RouletteRenderer {
     }
     this.ctx.restore();
 
-    const titleY = sceneH - Math.round(95 * scale) + WINNER_TEXT_OFFSET;
-    const nameY = sceneH - Math.round(42 * scale) + WINNER_TEXT_OFFSET;
+    const titleY = bannerY + Math.round(25 * scale);
+    const nameY = bannerY + Math.round(75 * scale);
 
     this.ctx.save();
     this.ctx.font = `bold ${titleFontSize}px Pretendard, sans-serif`;
