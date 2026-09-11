@@ -244,15 +244,21 @@
       let winnerType = 'last';
 
       document.addEventListener('DOMContentLoaded', () => {
-        initialize();
+        setupAndInitialize();
       });
 
-      function initialize() {
-        if (!window.roulette || !window.roulette.isReady) {
-          julesLog('InitializationPending', { readyState: false });
-          setTimeout(initialize, 100);
-          return;
+      function setupAndInitialize() {
+        if (window.roulette && window.roulette.isReady) {
+          initialize();
+        } else {
+          window.addEventListener('rouletteReady', initialize, { once: true });
+          if (window.roulette) {
+            window.roulette.addEventListener('ready', initialize, { once: true });
+          }
         }
+      }
+
+      function initialize() {
         julesLog('InitializationStart', { readyState: true });
 
         const savedYtUrl = localStorage.getItem('mbr_youtube_url') || '';
@@ -427,7 +433,7 @@
           toggleBtn.querySelector('.toggle-arrow').textContent = isCollapsed ? '▲' : '▼';
         });
 
-        document.querySelector('#btnShuffle').click();
+        getReady();
 
         const maps = window.roulette.getMaps();
         const mapSelector = document.querySelector('#sltMap');

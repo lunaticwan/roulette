@@ -3,6 +3,7 @@ import type { Rect } from './types/rect.type';
 import type { MouseEventArgs, UIObject } from './UIObject';
 
 export class FastForwader implements UIObject {
+  readonly type = 'FastForwader';
   private bound: Rect = {
     x: 0,
     y: 0,

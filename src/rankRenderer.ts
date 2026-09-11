@@ -11,6 +11,7 @@ import { bound } from './utils/bound.decorator';
  * 우측 상단 순위표 표시, 마우스 휠 스크롤 및 더블클릭 클립보드 복사 기능 지원
  */
 export class RankRenderer implements UIObject {
+  readonly type = 'RankRenderer';
   private _currentY = 0;
   private _targetY = 0;
   private fontHeight = 16;
