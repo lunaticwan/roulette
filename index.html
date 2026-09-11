@@ -51,12 +51,23 @@
         return match && match[2].length === 11 ? match[2] : null;
       }
 
-      function playYouTubeAudio() {
+      let isBgmPlaying = false;
+
+      function updateBgmButtonUI(playing) {
+        const iconSpan = document.querySelector('#btnToggleBgmIcon');
+        const btn = document.querySelector('#btnToggleBgm');
+        if (iconSpan && btn) {
+          iconSpan.textContent = playing ? '⏸' : '▶';
+          btn.title = playing ? 'Pause BGM' : 'Play BGM';
+        }
+      }
+
+      function playYouTubeAudio(rewind = true) {
         const urlInput = document.querySelector('#in_youtubeUrl');
         if (!urlInput) return;
         const url = urlInput.value.trim();
         const videoId = extractYouTubeVideoId(url);
-        julesLog('YouTubeAudioPlayRequest', { url, videoId });
+        julesLog('YouTubeAudioPlayRequest', { url, videoId, rewind });
         if (!videoId) return;
 
         let iframe = document.querySelector('#yt-audio-iframe');
@@ -73,8 +84,27 @@
           container.appendChild(iframe);
           document.body.appendChild(container);
         }
-        iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&enablejsapi=1`;
-        julesLog('YouTubeAudioStarted', { videoId, src: iframe.src });
+
+        if (rewind || !iframe.src || !iframe.src.includes(videoId)) {
+          iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&enablejsapi=1&start=0`;
+        } else {
+          iframe.contentWindow?.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
+        }
+
+        isBgmPlaying = true;
+        updateBgmButtonUI(true);
+        julesLog('YouTubeAudioStarted', { videoId, src: iframe.src, isBgmPlaying: true });
+      }
+
+      function pauseYouTubeAudio() {
+        julesLog('YouTubeAudioPauseRequest', {});
+        const iframe = document.querySelector('#yt-audio-iframe');
+        if (iframe && iframe.contentWindow) {
+          iframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
+        }
+        isBgmPlaying = false;
+        updateBgmButtonUI(false);
+        julesLog('YouTubeAudioPaused', { isBgmPlaying: false });
       }
 
       function stopYouTubeAudio() {
@@ -82,6 +112,17 @@
         if (iframe) {
           julesLog('YouTubeAudioStopped', { src: iframe.src });
           iframe.src = '';
+        }
+        isBgmPlaying = false;
+        updateBgmButtonUI(false);
+      }
+
+      function toggleYouTubeAudio() {
+        julesLog('YouTubeAudioToggleClick', { currentState: isBgmPlaying });
+        if (isBgmPlaying) {
+          pauseYouTubeAudio();
+        } else {
+          playYouTubeAudio(false);
         }
       }
 
@@ -230,6 +271,13 @@
           });
         }
 
+        const bgmToggleBtn = document.querySelector('#btnToggleBgm');
+        if (bgmToggleBtn) {
+          bgmToggleBtn.addEventListener('click', () => {
+            toggleYouTubeAudio();
+          });
+        }
+
         const urlParams = new URLSearchParams(window.location.search);
         const namesFromUrl = urlParams.get('names');
 
@@ -301,7 +349,7 @@
           const btn = e.currentTarget;
           if (btn) btn.disabled = true;
           document.querySelector('#settings').classList.add('hide');
-          playYouTubeAudio();
+          playYouTubeAudio(true);
           window.roulette.start();
         });
 
@@ -358,7 +406,6 @@
 
         window.roulette.addEventListener('goal', (e) => {
           julesLog('RouletteGoalEvent', e.detail);
-          stopYouTubeAudio();
           ready = false;
           setTimeout(() => {
             getReady();
@@ -435,23 +482,44 @@
               <i class="icon play"></i>
               <span>BGM (YouTube)</span>
             </label>
-            <input
-              type="text"
-              id="in_youtubeUrl"
-              placeholder="YouTube URL (e.g. https://www.youtube.com/watch?v=...)"
-              title="YouTube BGM Link"
-              style="
-                height: 32px;
-                width: 100%;
-                border-radius: 8px;
-                background: rgba(10, 14, 23, 0.65);
-                border: 1px solid rgba(255, 255, 255, 0.12);
-                color: #f8fafc;
-                padding: 0 10px;
-                font-size: 12px;
-                outline: none;
-              "
-            />
+            <div style="display: flex; flex: 1; gap: 6px; align-items: center; min-width: 0">
+              <input
+                type="text"
+                id="in_youtubeUrl"
+                placeholder="YouTube URL..."
+                title="YouTube BGM Link"
+                style="
+                  height: 32px;
+                  flex: 1;
+                  min-width: 0;
+                  border-radius: 8px;
+                  background: rgba(10, 14, 23, 0.65);
+                  border: 1px solid rgba(255, 255, 255, 0.12);
+                  color: #f8fafc;
+                  padding: 0 10px;
+                  font-size: 12px;
+                  outline: none;
+                "
+              />
+              <button
+                id="btnToggleBgm"
+                type="button"
+                title="Play/Pause BGM"
+                style="
+                  height: 32px;
+                  padding: 0 10px;
+                  flex-shrink: 0;
+                  border-radius: 8px;
+                  background: rgba(30, 41, 59, 0.8);
+                  border: 1px solid rgba(255, 255, 255, 0.12);
+                  color: #ffffff;
+                  cursor: pointer;
+                  font-size: 12px;
+                "
+              >
+                <span id="btnToggleBgmIcon">▶</span>
+              </button>
+            </div>
           </div>
           <div class="row row-toggles">
             <div class="toggle-item">
