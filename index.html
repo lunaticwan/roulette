@@ -251,6 +251,7 @@
 
       let ready = false;
       let winnerType = 'last';
+      let isInitialized = false;
 
       document.addEventListener('DOMContentLoaded', () => {
         setupAndInitialize();
@@ -260,14 +261,17 @@
         if (window.roulette && window.roulette.isReady) {
           initialize();
         } else {
-          window.addEventListener('rouletteReady', initialize, { once: true });
+          const onReady = () => initialize();
+          window.addEventListener('rouletteReady', onReady, { once: true });
           if (window.roulette) {
-            window.roulette.addEventListener('ready', initialize, { once: true });
+            window.roulette.addEventListener('ready', onReady, { once: true });
           }
         }
       }
 
       function initialize() {
+        if (isInitialized) return;
+        isInitialized = true;
         julesLog('InitializationStart', { readyState: true });
 
         const savedYtUrl = localStorage.getItem('mbr_youtube_url') || '';
