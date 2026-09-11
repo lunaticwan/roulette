@@ -341,10 +341,11 @@ export class Marble {
     });
   }
 
+  /** 당첨 구슬 외곽선 렌더링 */
   private _drawOutline(ctx: CanvasRenderingContext2D, lineWidth: number) {
     ctx.beginPath();
     ctx.strokeStyle = this.theme.marbleWinningBorder;
-    ctx.lineWidth = Math.max(1, Math.round(lineWidth));
+    ctx.lineWidth = lineWidth;
     ctx.arc(this.x, this.y, this.size / 2, 0, Math.PI * 2);
     ctx.stroke();
   }
