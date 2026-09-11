@@ -555,14 +555,13 @@ export class RouletteRenderer {
     ctx.restore();
   }
 
-  /** 단일 당첨자 최하단 배너 렌더링 */
+  /** 단일 당첨자 최하단 배너 렌더링 (화면 중앙 정렬) */
   private renderWinner(winner: Marble, theme: ColorTheme) {
     const sceneW = this._logicalWidth;
     const sceneH = this._logicalHeight;
 
-    const isSmallScreen = sceneW < 500;
-    const bannerWidth = isSmallScreen ? sceneW : sceneW / 2;
-    const bannerX = isSmallScreen ? 0 : sceneW / 2;
+    const bannerWidth = sceneW;
+    const bannerX = 0;
 
     this.ctx.save();
 
@@ -583,9 +582,28 @@ export class RouletteRenderer {
     this.ctx.fillRect(bannerX, sceneH - winnerAreaHeight, bannerWidth, 3);
 
     const scale = Math.min(1, sceneW / 640);
-    const marbleSize = Math.max(50, Math.min(100, Math.round(100 * scale)));
-    const marbleCenterX = bannerX + bannerWidth - marbleSize / 2 - Math.round(20 * scale);
+    const marbleSize = Math.max(48, Math.min(90, Math.round(90 * scale)));
+    const gap = Math.round(15 * scale);
+
+    const titleFontSize = Math.max(18, Math.round(38 * scale));
+    const nameFontSize = Math.max(24, Math.round(58 * scale));
+
+    const winnerTitle = `★ ${getText('Winner')} ★`;
+
+    this.ctx.font = `bold ${titleFontSize}px Pretendard, sans-serif`;
+    const titleWidth = this.ctx.measureText(winnerTitle).width;
+
+    this.ctx.font = `bold ${nameFontSize}px Pretendard, sans-serif`;
+    const nameWidth = this.ctx.measureText(winner.name).width;
+
+    const textBlockWidth = Math.max(titleWidth, nameWidth);
+    const totalWidth = marbleSize + gap + textBlockWidth;
+
+    const startX = Math.max(10, (sceneW - totalWidth) / 2);
+    const marbleCenterX = startX + marbleSize / 2;
     const marbleCenterY = sceneH - winnerAreaHeight / 2;
+    const textX = startX + marbleSize + gap;
+
     const marbleImage = this.getMarbleImage(winner.name);
 
     this.ctx.save();
@@ -607,39 +625,33 @@ export class RouletteRenderer {
     }
     this.ctx.restore();
 
-    const titleFontSize = Math.max(20, Math.round(48 * scale));
-    const nameFontSize = Math.max(26, Math.round(72 * scale));
-
-    const textRightX = marbleCenterX - marbleSize / 2 - Math.round(15 * scale);
-    const winnerTitle = `★ ${getText('Winner')} ★`;
-
-    const titleY = sceneH - Math.round(110 * scale) + WINNER_TEXT_OFFSET;
-    const nameY = sceneH - Math.round(50 * scale) + WINNER_TEXT_OFFSET;
+    const titleY = sceneH - Math.round(95 * scale) + WINNER_TEXT_OFFSET;
+    const nameY = sceneH - Math.round(42 * scale) + WINNER_TEXT_OFFSET;
 
     this.ctx.save();
     this.ctx.font = `bold ${titleFontSize}px Pretendard, sans-serif`;
-    this.ctx.textAlign = 'right';
+    this.ctx.textAlign = 'left';
     this.ctx.shadowBlur = 12;
     this.ctx.shadowColor = 'rgba(255, 215, 0, 0.8)';
     this.ctx.fillStyle = goldGradient;
-    this.ctx.fillText(winnerTitle, textRightX, titleY);
+    this.ctx.fillText(winnerTitle, textX, titleY);
     this.ctx.restore();
 
     this.ctx.save();
     this.ctx.font = `bold ${nameFontSize}px Pretendard, sans-serif`;
-    this.ctx.textAlign = 'right';
+    this.ctx.textAlign = 'left';
     this.ctx.shadowBlur = 18;
     this.ctx.shadowColor = `hsl(${winner.hue}, 100%, 60%)`;
 
-    const nameGradient = this.ctx.createLinearGradient(textRightX - 200, nameY, textRightX, nameY);
+    const nameGradient = this.ctx.createLinearGradient(textX, nameY, textX + nameWidth, nameY);
     nameGradient.addColorStop(0, '#ffffff');
     nameGradient.addColorStop(1, `hsl(${winner.hue}, 100%, 75%)`);
 
     this.ctx.fillStyle = nameGradient;
     this.ctx.lineWidth = Math.max(2, Math.round(4 * scale));
     this.ctx.strokeStyle = '#000000';
-    this.ctx.strokeText(winner.name, textRightX, nameY);
-    this.ctx.fillText(winner.name, textRightX, nameY);
+    this.ctx.strokeText(winner.name, textX, nameY);
+    this.ctx.fillText(winner.name, textX, nameY);
     this.ctx.restore();
 
     this.ctx.restore();

@@ -27,6 +27,14 @@ describe('utils', () => {
       });
     });
 
+    it('parses name with +, x, X, and × count delimiters', () => {
+      expect(parseName('수박+2')).toEqual({ name: '수박', weight: 1, count: 2 });
+      expect(parseName('키위x3')).toEqual({ name: '키위', weight: 1, count: 3 });
+      expect(parseName('귤X4')).toEqual({ name: '귤', weight: 1, count: 4 });
+      expect(parseName('사과×5')).toEqual({ name: '사과', weight: 1, count: 5 });
+      expect(parseName('Alex')).toEqual({ name: 'Alex', weight: 1, count: 1 });
+    });
+
     it('returns null for empty name string', () => {
       expect(parseName('')).toBeNull();
     });

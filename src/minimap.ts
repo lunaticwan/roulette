@@ -7,7 +7,7 @@ import type { VectorLike } from './types/VectorLike';
 import type { UIObject } from './UIObject';
 import { bound } from './utils/bound.decorator';
 
-const MINIMAP_SCALE = 2.5;
+const MINIMAP_SCALE = 1.5;
 const MINIMAP_UNITS = 26;
 /** 미니맵 좌측 패딩 여백 */
 export const MINIMAP_INSET = 10;
