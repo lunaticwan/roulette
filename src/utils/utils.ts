@@ -9,13 +9,16 @@ function getRegexValue(regex: RegExp, str: string) {
 
 export function parseName(nameStr: string) {
   const weightRegex = /\/(\d+)/;
-  const countRegex = /\*(\d+)/;
+  const countRegex = /[*+xX\u00d7]\s*(\d+)/;
   const hasWeight = weightRegex.test(nameStr);
   const hasCount = countRegex.test(nameStr);
-  const name = getRegexValue(/^\s*([^/*]+)?/, nameStr);
-  if (!name) return null;
   const weight = hasWeight ? parseInt(getRegexValue(weightRegex, nameStr), 10) : 1;
   const count = hasCount ? parseInt(getRegexValue(countRegex, nameStr), 10) : 1;
+  const name = nameStr
+    .replace(/\/(\d+)/, '')
+    .replace(/[*+xX\u00d7]\s*(\d+)/, '')
+    .trim();
+  if (!name) return null;
   return {
     name,
     weight,

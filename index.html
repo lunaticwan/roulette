@@ -62,6 +62,32 @@
         }
       }
 
+      function preloadYouTubeAudio(url) {
+        if (!url) return;
+        const videoId = extractYouTubeVideoId(url.trim());
+        if (!videoId) return;
+
+        let iframe = document.querySelector('#yt-audio-iframe');
+        if (!iframe) {
+          const container = document.createElement('div');
+          container.id = 'yt-audio-container';
+          container.style.cssText =
+            'display:none; position:absolute; width:1px; height:1px; overflow:hidden; opacity:0; pointer-events:none;';
+          iframe = document.createElement('iframe');
+          iframe.id = 'yt-audio-iframe';
+          iframe.width = '1';
+          iframe.height = '1';
+          iframe.allow = 'autoplay';
+          container.appendChild(iframe);
+          document.body.appendChild(container);
+        }
+
+        if (!iframe.src || !iframe.src.includes(videoId)) {
+          iframe.src = `https://www.youtube.com/embed/${videoId}?enablejsapi=1&autoplay=0`;
+          julesLog('YouTubeAudioPreloaded', { videoId, src: iframe.src });
+        }
+      }
+
       function playYouTubeAudio(rewind = true) {
         const urlInput = document.querySelector('#in_youtubeUrl');
         if (!urlInput) return;
@@ -81,28 +107,22 @@
 
         let iframe = document.querySelector('#yt-audio-iframe');
         if (!iframe) {
-          const container = document.createElement('div');
-          container.id = 'yt-audio-container';
-          container.style.cssText =
-            'display:none; position:absolute; width:1px; height:1px; overflow:hidden; opacity:0; pointer-events:none;';
-          iframe = document.createElement('iframe');
-          iframe.id = 'yt-audio-iframe';
-          iframe.width = '1';
-          iframe.height = '1';
-          iframe.allow = 'autoplay';
-          container.appendChild(iframe);
-          document.body.appendChild(container);
+          preloadYouTubeAudio(url);
+          iframe = document.querySelector('#yt-audio-iframe');
         }
 
-        if (rewind || !iframe.src || !iframe.src.includes(videoId)) {
-          iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&enablejsapi=1&start=0`;
-        } else {
+        if (iframe && iframe.src && iframe.src.includes(videoId)) {
+          if (rewind) {
+            iframe.contentWindow?.postMessage('{"event":"command","func":"seekTo","args":[0, true]}', '*');
+          }
           iframe.contentWindow?.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
+        } else if (iframe) {
+          iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&enablejsapi=1&start=0`;
         }
 
         isBgmPlaying = true;
         updateBgmButtonUI(true);
-        julesLog('YouTubeAudioStarted', { videoId, src: iframe.src, isBgmPlaying: true });
+        julesLog('YouTubeAudioStarted', { videoId, src: iframe ? iframe.src : '', isBgmPlaying: true });
       }
 
       function pauseYouTubeAudio() {
@@ -118,9 +138,10 @@
 
       function stopYouTubeAudio() {
         const iframe = document.querySelector('#yt-audio-iframe');
-        if (iframe) {
+        if (iframe && iframe.contentWindow) {
           julesLog('YouTubeAudioStopped', { src: iframe.src });
-          iframe.src = '';
+          iframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
+          iframe.contentWindow.postMessage('{"event":"command","func":"seekTo","args":[0, true]}', '*');
         }
         isBgmPlaying = false;
         updateBgmButtonUI(false);
@@ -145,12 +166,16 @@
 
       function parseName(nameStr) {
         const weightRegex = /(\/\d+)/;
-        const countRegex = /(\*\d+)/;
+        const countRegex = /([*+xX\u00d7]\s*\d+)/;
         const hasWeight = weightRegex.test(nameStr);
         const hasCount = countRegex.test(nameStr);
-        const name = /^\s*([^\/*]+)?/.exec(nameStr)[1];
-        const weight = hasWeight ? parseInt(weightRegex.exec(nameStr)[1].replace('/', '')) : 1;
-        const count = hasCount ? parseInt(countRegex.exec(nameStr)[1].replace('*', '')) : 1;
+        const weight = hasWeight ? parseInt(weightRegex.exec(nameStr)[1].replace('/', ''), 10) : 1;
+        const count = hasCount ? parseInt(countRegex.exec(nameStr)[1].replace(/[*+xX\u00d7]\s*/, ''), 10) : 1;
+        const name = nameStr
+          .replace(/\/\d+/, '')
+          .replace(/[*+xX\u00d7]\s*\d+/, '')
+          .trim();
+        if (!name) return null;
         return {
           name,
           weight,
@@ -278,14 +303,19 @@
         const ytInput = document.querySelector('#in_youtubeUrl');
         if (ytInput) {
           ytInput.value = savedYtUrl;
+          if (savedYtUrl) {
+            preloadYouTubeAudio(savedYtUrl);
+          }
           ytInput.addEventListener('input', (e) => {
             const val = e.target.value;
             localStorage.setItem('mbr_youtube_url', val);
+            preloadYouTubeAudio(val);
             julesLog('YouTubeUrlInput', { value: val, videoId: extractYouTubeVideoId(val) });
           });
           ytInput.addEventListener('change', (e) => {
             const val = e.target.value;
             localStorage.setItem('mbr_youtube_url', val);
+            preloadYouTubeAudio(val);
             julesLog('YouTubeUrlChange', { value: val, videoId: extractYouTubeVideoId(val) });
           });
         }
@@ -425,11 +455,11 @@
 
         window.roulette.addEventListener('goal', (e) => {
           julesLog('RouletteGoalEvent', e.detail);
-          ready = false;
-          setTimeout(() => {
-            getReady();
-            document.querySelector('#settings').classList.remove('hide');
-          }, 3000);
+          const btnStart = document.querySelector('#btnStart');
+          if (btnStart) {
+            btnStart.disabled = !ready;
+          }
+          document.querySelector('#settings').classList.remove('hide');
         });
 
         window.roulette.addEventListener('message', (e) => {
