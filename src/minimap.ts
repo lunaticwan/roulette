@@ -19,6 +19,7 @@ export const MINIMAP_WIDTH = MINIMAP_UNITS * MINIMAP_SCALE;
  * 구슬 위치, 스테이지 구조물, 현 시점 카메라 영역 표시 및 드래그 탐색 지원
  */
 export class Minimap implements UIObject {
+  readonly type = 'Minimap';
   private ctx!: CanvasRenderingContext2D;
   private lastParams: RenderParameters | null = null;
 

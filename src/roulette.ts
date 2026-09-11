@@ -117,6 +117,8 @@ export class Roulette extends EventTarget {
       this._init().then(() => {
         this._isReady = true;
         julesLog('Initialized', { isReady: true });
+        this.dispatchEvent(new CustomEvent('ready'));
+        window.dispatchEvent(new CustomEvent('rouletteReady'));
         this._update();
       });
     });
@@ -130,7 +132,7 @@ export class Roulette extends EventTarget {
   /** UI 객체 등록 및 이벤트 리스너 연결 */
   private addUiObject(obj: UIObject) {
     this._uiObjects.push(obj);
-    julesLog('addUiObject', { type: obj.constructor.name });
+    julesLog('addUiObject', { type: obj.type || obj.constructor.name });
     if (obj.onWheel) {
       this._renderer.canvas.addEventListener('wheel', obj.onWheel);
     }

@@ -186,10 +186,6 @@ export class Marble {
     if (outline) {
       this._drawOutline(ctx, 2 / zoom);
     }
-
-    if (options.useSkills && this.isActive) {
-      this._renderCoolTime(ctx, zoom);
-    }
   }
 
   /**
