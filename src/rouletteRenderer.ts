@@ -5,7 +5,7 @@ import type { GameObject } from './gameObject';
 import { KeywordService } from './keywordService';
 import type { Marble } from './marble';
 import { MINIMAP_INSET, MINIMAP_WIDTH } from './minimap';
-import type { WinnerRange } from './options';
+import options, { type WinnerRange } from './options';
 import type { ParticleManager } from './particleManager';
 import type { ColorTheme } from './types/ColorTheme';
 import type { MapEntityState } from './types/MapEntity.type';
@@ -348,7 +348,8 @@ export class RouletteRenderer {
         false,
         this.getMarbleImage(marble.name),
         viewPort,
-        this._theme
+        this._theme,
+        options.marbleStyle
       );
     });
   }
