@@ -106,3 +106,27 @@ src/
 ## 🌐 배포 설정 (Deployment)
 
 GitHub Actions 워크플로우(`.github/workflows/deploy.yml`)를 통해 `main` 브랜치 코드 푸시 시 automated CI/CD 테스트 및 GitHub Pages 자동 배포가 완료됨.
+
+---
+
+## 📄 라이선스 및 오픈소스 고지 (License & Open Source)
+
+본 프로젝트는 [MIT License](LICENSE) 조건에 따라 자유롭게 수정 및 재배포가 가능합니다.
+
+### 주요 오픈소스 라이브러리 (Major Open Source Libraries)
+
+프로젝트에서 사용 중인 주요 핵심 외부 라이브러리 및 저작권/라이선스 현황은 다음과 같습니다.
+
+| 라이브러리                                                       | 구분 및 용도                          | 라이선스                                             |
+| :--------------------------------------------------------------- | :------------------------------------ | :--------------------------------------------------- |
+| **[box2d-wasm](https://github.com/GoogleImpactLab/box2d-wasm)**  | Box2D 2D 물리 연산 WebAssembly 바인딩 | [zlib License](https://opensource.org/licenses/Zlib) |
+| **[canvas-confetti](https://github.com/catdad/canvas-confetti)** | 승리 연출 캔버스 폭죽 효과 모듈       | [MIT License](https://opensource.org/licenses/MIT)   |
+| **[howler](https://github.com/goldfire/howler.js)**              | Web Audio API 기반 효과음 음향 재생   | [MIT License](https://opensource.org/licenses/MIT)   |
+| **[zod](https://github.com/colinhacks/zod)**                     | 옵션 및 환경설정 런타임 스키마 검증   | [MIT License](https://opensource.org/licenses/MIT)   |
+| **[es-toolkit](https://github.com/toss/es-toolkit)**             | 유틸리티 함수 모듈                    | [MIT License](https://opensource.org/licenses/MIT)   |
+| **[ts-pattern](https://github.com/garronej/ts-pattern)**         | 패턴 매칭 처리                        | [MIT License](https://opensource.org/licenses/MIT)   |
+
+### 커스터마이징 및 수정 사항 고지 (Customization Notice)
+
+- 본 프로젝트는 의존 중인 모든 오픈소스 패키지를 NPM 공식 레지스트리를 통해 수신하며, 패키지의 원본 소스 코드를 별도로 직접 수정/커스터마이징하지 않고 표준 public API 규격을 준수하여 연동합니다.
+- 외부 라이브러리의 고유 라이선스 조건을 성실히 준수합니다.
